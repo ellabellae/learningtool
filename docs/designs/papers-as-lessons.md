@@ -23,7 +23,9 @@ Ella reads research papers for fun across many fields (EEG neurofeedback and BCI
 - Input is PDF with a text layer. Scanned PDFs are out of scope: `extract` fails fast (mean chars per page < 200) with "no text layer; OCR unsupported" and a non-zero exit.
 - Personal tool first. Shareable by cloning the repo plus a profile file. No accounts. Requires `ANTHROPIC_API_KEY`; the README says so.
 - LLM calls go through the Anthropic Python SDK with structured output (schema-enforced JSON). `claude -p` is rejected because it cannot enforce the schema the checker relies on. *(Decided in spec review; was an open question.)*
-- Files are truth (same pattern as Ella's Atlas tool): profile, spans, lessons, checks, and concept memory are plain JSON/YAML under `data/`. `data/papers/*/source.pdf` and `crops/` are gitignored (copyrighted PDFs never enter the repo); `spans.json`, `lesson.json`, `checks.json` are committed.
+- Files are truth (same pattern as Ella's Atlas tool): profile, spans, lessons, checks, and concept memory are plain JSON/YAML under `data/`. `data/papers/*/source.pdf`, `crops/`, and `lesson.html` (which embeds the crops and runs to several MB) are gitignored, so copyrighted page images never enter the repo; `spans.json`, `prereq.json`, `lesson.json`, `checks.json` are committed.
+- Node 20+ is a runtime requirement, not just a test dependency: `check.py` evaluates widget models through one `node` subprocess per lesson and errors clearly if `node` is missing.
+- Papers above 150k characters of span text are refused by `generate` with a token-estimate message. A known v1 limit; long economics papers wait for chunking in v1.1.
 - A lesson is one self-contained HTML file. It cannot write back to the repo. Anything the player records (your prediction) lives in the browser's localStorage and does not feed memory in v1.
 - Git discipline: feature branches, small commits, merges to main, so every change is traceable.
 - Tooling on this Mac: Python 3.12, Node 24, bun. PyMuPDF, Pydantic, and the Anthropic SDK are not installed yet; no poppler.
@@ -91,9 +93,9 @@ learningtool/
 
 - `learn survey [--profile]` writes the profile. Any other command that needs a profile errors with "run `learn survey`" if it is missing.
 - `learn extract <pdf>` copies the PDF to `data/papers/<sha256>/source.pdf` and writes `spans.json`. Skips if `spans.json` exists unless `--force`.
-- `learn generate <paper_id> [--failures checks.json]` runs call 1 (prereq) then call 2 (lesson), writes `lesson.json`. With `--failures`, call 1 is skipped (the previous prereq list is reused from `lesson.json`) and call 2 is re-run with the failed claim and widget ids plus reasons appended to the prompt.
-- `learn check <paper_id>` writes `checks.json`. Exit 0 if every `finding` claim is `verified`, 1 otherwise. On exit 0 it upserts this paper's `ConceptRecord`s into `concepts.json`.
-- `learn render <paper_id>` writes `lesson.html`, baking in `profile.default_depth`.
+- `learn generate <paper_id> [--failures checks.json]` runs call 1 (prereq), writes `prereq.json`, then call 2 (lesson), writes `lesson.json`. With `--failures`, call 1 is skipped (`prereq.json` is reused) and call 2 is re-run with the failed claim and widget ids plus reasons appended to the prompt.
+- `learn check <paper_id>` writes `checks.json` and never modifies `lesson.json` (the retry prompt needs the original). Exit 0 if every `finding` claim is `verified`, 1 otherwise. On exit 0 it replaces this paper's records in `concepts.json` (delete all for `paper_id`, then insert), so dropped concepts do not linger.
+- `learn render <paper_id>` reads `lesson.json` and `checks.json`, applies the checker's removals and flags at render time, writes `lesson.html`, baking in `profile.default_depth`.
 - `learn open <paper_id>` opens `lesson.html` in the default browser.
 - `learn lesson <pdf>` chains extract → generate → check → (if check exits 1: generate `--failures` once → check again) → render → open. Render and open always happen; the command's exit code is the last check's exit code; memory is written only by a passing check.
 
@@ -104,22 +106,27 @@ learningtool/
 ```
 Profile       {schema_version, name, known_domains[str], default_depth: brief|standard|deep, skip_topics[str], known_concepts[str]}
 Span          {id, page, text, bboxes[[x0,y0,x1,y1]]}   # sentence-level, one page per span (a sentence crossing a page or column break is split into two spans); text is dehyphenated and ligature-folded; one bbox per rendered line
-Lesson        {schema_version, paper_id, title, scenes[Scene], widgets[Widget], concepts[ConceptRecord]}
+LessonDraft   {title, scenes[Scene], widgets[Widget], concepts[ConceptRecord]}        # what call 2 emits
+Lesson        LessonDraft + {schema_version, paper_id, prior_links[PriorLink]}        # generate.py post-fills these
 Scene         {id, role: prereq|before|problem|tried|predict|found|changed, min_depth: brief|standard|deep,
                title, analogy, prose, claims[Claim], widget_id?,
-               prediction_question?, prediction_options[str], prediction_answer_index?, reveal_scene_id?,
-               prior_links[PriorLink]}
-Claim         {text, kind: finding|background|illustrative, quote_span_id?, quote_start?, quote_end?, span_ids[str], citation?,
-               status: unverified|verified|failed|unchecked}
+               prediction_question?, prediction_options[str], prediction_answer_index?, reveal_scene_id?}
+Claim         {id, text, kind: finding|background|illustrative, quote_span_id?, span_ids[str], citation?}
 Widget        {id, template_id, params[{name, value}], ranges[{name, lo, hi}], labels[{name, text}],
                expected_behaviors[{param, param_delta: +|-, output, output_delta: +|-}]}
 ConceptRecord {concept_id (slug), name, one_line, scene_id}
-PriorLink     {concept_id, paper_id, paper_title, read_date, note}
+PriorLink     {scene_id, concept_id, paper_id, paper_title, read_date, note}
+Checks        {schema_version, paper_id, claims[{claim_id, status: verified|failed|unchecked, reason?}],
+               widgets[{widget_id, ok, reason?}], scenes[{scene_id, flags[str], widget_removed, reveal_nulled}]}
 ```
 
-Prerequisite rungs are scenes with `role: prereq`; there is no separate list. Call 1 (`prereq.py`) emits `[{concept_id, name, why_needed}]`; call 2 turns each into a `prereq` scene. Pydantic validators: a `predict` scene must have `prediction_question`, at least two options, and a `reveal_scene_id` that resolves to a `found` scene with the same `min_depth`; `prediction_answer_index` is optional (null means free-form guess, no right/wrong shown). The player finds the predict scene whose `reveal_scene_id` equals the current scene id to show right/wrong.
+Statuses live only in `checks.json`; `lesson.json` on disk is the model's output plus post-filled fields, never mutated by `check`. `scenes[]` order is play order; a validator requires every `prereq` scene to precede every story scene, unique `Claim.id` and `Scene.id` within a lesson, and every `ConceptRecord.scene_id` to resolve.
 
-`concepts.json` is `[{concept_id, name, one_line, paper_id, paper_title, scene_id, created_at}]`, keyed by `(paper_id, concept_id)`; re-running a paper overwrites its own entries. Tie-back lookup excludes the current `paper_id`.
+Quotes are whole spans in v1: a `finding` claim's "paper's words" is `spans[quote_span_id].text`, the entire sentence. Character offsets were dropped because a model cannot count characters reliably, and a mid-word slice would pass as "verbatim". Sub-sentence quotes are v1.1 (model emits `quote_text`, checker requires an exact substring and computes offsets itself).
+
+Prerequisite rungs are scenes with `role: prereq`; there is no separate list. Call 1 (`prereq.py`) emits `[{concept_id, name, why_needed}]`, saved as `prereq.json`; call 2 turns each into a `prereq` scene. `profile.known_concepts` are free-text names listed in call 1's prompt with "do not emit a prerequisite for these"; no exact matching in v1. Validators: a `predict` scene must have `prediction_question`, at least two options, and a `reveal_scene_id` that resolves to a `found` scene with the same `min_depth`; `prediction_answer_index` is optional (null means free-form guess, no right/wrong shown). The player finds the predict scene whose `reveal_scene_id` equals the current scene id to show right/wrong.
+
+`concepts.json` is `[{concept_id, name, one_line, paper_id, paper_title, scene_id, created_at}]`. A passing check deletes every record for the paper and inserts the current ones. `generate.py` fills `Lesson.prior_links` by matching `LessonDraft.concepts[].concept_id` against records from other papers and attaching each link to that concept's `scene_id`.
 
 ### Depth dial
 
@@ -127,19 +134,19 @@ Generate `deep` once. Every scene carries `min_depth`. The player filters client
 
 ### Quotes and crops
 
-The "paper's words" for a finding is `spans[quote_span_id].text[quote_start:quote_end]`. The LLM never emits quote text, only span id and offsets. `render` inlines one base64 PNG crop per cited span (deduplicated by span id) at 110 DPI: the union of the span's `bboxes` padded by 24 pt and clipped to the page, with the highlight drawn from the `bboxes`. A lesson stays self-contained and under a few MB. Scenes with no `finding` claims (all prereq rungs) render "No paper's words for this rung" in the panel.
+The "paper's words" for a finding is `spans[quote_span_id].text`; when `quote_span_id` is null the panel shows `span_ids[0]`'s text and crop instead. The LLM never emits quote text, only span ids. `render` inlines one base64 PNG crop per cited span (deduplicated by span id) at 110 DPI: the union of the span's `bboxes` padded by 24 pt and clipped to the page, with the highlight drawn from the `bboxes`. A lesson stays self-contained and under a few MB. Scenes with no `finding` claims (all prereq rungs) render "No paper's words for this rung" in the panel.
 
 ### Checker rules (v1)
 
-1. Every `finding` claim has ≥1 `span_ids` that exist; if it has a quote, `quote_span_id` is in `span_ids` and the offsets slice that span's `text`. Otherwise `failed`.
-2. Numeric tokens in a `finding` claim's `text` (regex, compared as strings with trailing zeros stripped; no unit or word normalization) all appear in its cited spans' `text`. Otherwise `failed`. False failures from "twelve" vs "12" are accepted in v1 and documented.
+1. Every `finding` claim has ≥1 `span_ids` that exist; if `quote_span_id` is set it is one of them. Otherwise `failed`.
+2. Numeric tokens in a `finding` claim's `text` all appear in its cited spans' `text`. Token regex `-?\d[\d,]*(\.\d+)?|-?\.\d+`; thousands separators stripped; trailing zeros stripped only after a decimal point; `.05` equals `0.05`; no unit or word normalization. Otherwise `failed`. False failures from "twelve" vs "12" are accepted in v1 and documented.
 3. `background` claims with a non-empty `citation` become `unchecked`; with an empty one, `failed`.
 4. `illustrative` claims become `unchecked`.
-5. Every `widget.template_id` exists in the registry, every `params` and `ranges` name is a registry param, and every range is a sub-range of the registry's hard bounds. On failure the widget is removed from `widgets[]` and the scene's `widget_id` is nulled; the scene is flagged.
-6. Every `expected_behavior` holds: evaluate `model()` with the named param at `ranges.lo` and at `ranges.hi` (other params at their `value`) and compare the named output's direction. On failure, same consequence as rule 5.
-7. Every `reveal_scene_id`, `widget_id`, and `prior_links.paper_id` resolves. A dangling reference is nulled (or the link dropped) and the scene is flagged.
+5. Every `widget.template_id` exists in the registry; every `params` and `ranges` name is a registry param; every ranged param has a `value` with `lo <= value <= hi`; every range is a sub-range of the registry's hard bounds; every `expected_behaviors.output` is a registry-named output. On failure `checks.widgets[].ok` is false, the scene is flagged with `widget_removed`, and `render` omits the widget.
+6. Every `expected_behavior` holds: evaluate `model()` with the named param at `ranges.lo` and at `ranges.hi` (other params at their `value`); `+` means the named output at `hi` is strictly greater than at `lo`, `-` strictly less; equality fails. All behaviors for a lesson are batched into one `node` call. On failure, same consequence as rule 5.
+7. Every `reveal_scene_id` and `widget_id` resolves within the lesson; every `prior_links.paper_id` + `concept_id` resolves to a `concepts.json` record; every `ConceptRecord.scene_id` resolves. A dangling reference is recorded in `checks.scenes[]` (`reveal_nulled`, or the link dropped) and the scene is flagged; `render` applies it.
 
-`unverified` = not yet checked. `failed` = checked and rejected. `unchecked` = not checkable by design. A flagged scene renders with a visible marker on it and on its arc dot; the lesson never renders silently clean.
+`failed` = checked and rejected. `unchecked` = not checkable by design. A flagged scene renders with a visible marker on it and on its arc dot; the lesson never renders silently clean.
 
 ### Memory
 
@@ -147,11 +154,11 @@ The "paper's words" for a finding is `spans[quote_span_id].text[quote_start:quot
 
 ### Player
 
-From the approved wireframe `~/.gstack/projects/ellabellae-learningtool/designs/mockup-20260912/wireframe-scene.png`: story arc as top navigation (italic dots for prerequisite rungs, a marker on flagged scenes), scene on the left (analogy prose, then widget), "The paper's words" on the right (quote, page, crop with highlight, claim list with kind and status tags), depth dial and Next always visible, tie-back line under the scene when `prior_links` is non-empty. The prediction scene shows options and records the choice in localStorage; the reveal scene shows the paper's finding and right/wrong when `prediction_answer_index` is set. Widget `.mjs` files are inlined by `render` with `export` statements stripped (node tests import the file directly).
+From the approved wireframe `~/.gstack/projects/ellabellae-learningtool/designs/mockup-20260912/wireframe-scene.png`: story arc as top navigation (italic dots for prerequisite rungs, a marker on flagged scenes), scene on the left (analogy prose, then widget), "The paper's words" on the right (quote, page, crop with highlight, claim list with kind and status tags), depth dial and Next always visible, tie-back line under the scene when `prior_links` is non-empty. The prediction scene shows options and records the choice in localStorage; the reveal scene shows the paper's finding and right/wrong when `prediction_answer_index` is set. `render` inlines each widget template as `TEMPLATES["<id>"] = (() => { /* file with export stripped */ return {model, curve, draw}; })();` so two templates in one lesson never collide, and the player dispatches by `template_id`; node tests import the `.mjs` file directly.
 
 ### Extraction (the largest step)
 
-PyMuPDF `get_text("dict")` per page → drop blocks in the header/footer margins (top and bottom 6% of page height) → detect one or two columns by block x-midpoint clustering → order blocks by column then y → join lines within a block, removing end-of-line hyphenation and folding ligatures → regex sentence split → map each sentence's character range back to its lines to produce `bboxes` → stop at the first block whose text matches a References/Bibliography heading. Inline equations stay as whatever text PyMuPDF yields; they are not parsed. A visual spot-check script renders every span's highlight on its page so extraction quality is judged by eye on the first paper before anything downstream is built.
+PyMuPDF `get_text("dict")` per page with `TEXT_PRESERVE_LIGATURES` disabled (so ligature folding is free) → drop blocks in the header/footer margins (top and bottom 6% of page height) → detect one or two columns by block x-midpoint clustering → order blocks by column then y → join lines within a block, removing end-of-line hyphenation, while recording an offset table `(line_index, cleaned_start, cleaned_end)` per line → regex sentence split → look each sentence's cleaned character range up in the offset table to produce `bboxes` → stop at the first block whose text matches a References/Bibliography heading. Inline equations stay as whatever text PyMuPDF yields; they are not parsed. A visual spot-check script renders every span's highlight on its page so extraction quality is judged by eye on the first paper before anything downstream is built.
 
 ## Open Questions
 
@@ -169,7 +176,11 @@ PyMuPDF `get_text("dict")` per page → drop blocks in the header/footer margins
 
 ## Deferred to v1.1
 
-Paper figures (`Figure` records, caption linking, figure fallback for widget-less scenes; vector plots need `cluster_drawings()` plus caption regex), OCR, friends' onboarding docs, the Socratic deep mode, automatic preference learning, the concept-map UI.
+Paper figures (`Figure` records, caption linking, figure fallback for widget-less scenes; vector plots need `cluster_drawings()` plus caption regex), sub-sentence quotes, chunking for papers over 150k characters, OCR, friends' onboarding docs, the Socratic deep mode, automatic preference learning, the concept-map UI.
+
+## Reviewer Concerns
+
+Three adversarial review rounds (scores 6, 7, 7 out of 10; 73 issues raised). Every round-three issue was applied to this document after the loop ended, without a fourth review: `Checks` shape and `Claim.id`, `prereq.json`, check never mutating `lesson.json`, `LessonDraft` vs post-filled `Lesson`, delete-then-insert memory, the numeric regex, strict widget direction, whole-span quotes, Node as a runtime requirement, template inlining wrapper, the extraction offset table, `lesson.html` gitignored, the 150k-character guard. The eng review should read the data shapes and checker rules once more with fresh eyes.
 
 ## Distribution Plan
 
@@ -179,7 +190,7 @@ Git clone plus `pip install -e .`; `learn` on PATH; `ANTHROPIC_API_KEY` in the e
 
 Each is its own feature branch, merged to main when green:
 
-1. `feat/scaffold`: package layout, `learn` CLI skeleton with `--profile` and paper-id prefix resolution, Pydantic schema with validators and a fixture `lesson.json`, `.gitignore` for PDFs and crops, `profile.example.yaml`, pytest, GitHub Actions workflow, README with the API-key requirement. Validate the emitted JSON schema against the SDK's structured-output support before writing any prompt.
+1. `feat/scaffold`: package layout, `learn` CLI skeleton with `--profile` and paper-id prefix resolution, Pydantic schema (`LessonDraft`, `Lesson`, `Checks`) with validators and a fixture `lesson.json` + `checks.json`, `.gitignore` for PDFs, crops, and `lesson.html`, `profile.example.yaml`, pytest, GitHub Actions workflow (Python + Node), README with the API-key and Node requirements. Validate the emitted JSON schema against the SDK's structured-output support before writing any prompt.
 2. `feat/extract`: the extraction algorithm above; the no-text-layer guard; crop rendering; the visual spot-check script; run on the EEG paper and judge by eye. Budget this as the largest step.
 3. `feat/player`: render the fixture `lesson.json` to `lesson.html` with the wireframe layout: story arc, quote panel, depth filter, prediction and reveal, flagged-scene marker. Judge it by eye before any LLM is involved.
 4. `feat/widgets`: registry plus `threshold-learning-curve.mjs` with `model()`, `curve()`, `draw()`, hard bounds, and the node-subprocess directional test.
