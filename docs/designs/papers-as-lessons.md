@@ -15,119 +15,163 @@ Ella reads research papers for fun across many fields (EEG neurofeedback and BCI
 - **A paper becomes a story you play through.** Prerequisite rungs first (the concepts the paper assumes that you lack), then the paper as a plot: the world before, what they tried, *your prediction*, what they found, what changed.
 - **You guess the ending.** Before the key result, the lesson asks what you think happened. Then the paper's real finding is revealed. That is retrieval practice without a tutor chat.
 - **Sliders on the paper's real knobs.** For the 1-3 parameters that actually change the outcome, a widget lets you "change a variable and see what breaks."
-- **The paper's exact words, one click away.** Every claim points at an extracted text span with a page number and a highlighted crop of the actual page. The model never writes the quote; it points at it.
-- **It remembers what you've read.** Each lesson leaves a concept record. The next lesson says "you saw this idea in the connectome neurofeedback paper in March, applied there to attention networks."
+- **The paper's exact words, one click away.** Every finding points at an extracted text span with a page number and a highlighted crop of the actual page. The model never writes the quote; it points at it.
+- **It remembers what you've read.** Each lesson leaves concept records. The next lesson says "you saw this idea in the connectome neurofeedback paper in March, applied there to attention networks."
 
 ## Constraints
 
-- Input is PDF only. No OCR in v1 (scanned PDFs are out of scope).
-- Personal tool first. Shareable to friends by cloning the repo plus their own profile file. No accounts.
-- Files are truth (same pattern as Ella's Atlas tool): profile, spans, lessons, checks, and concept memory are plain JSON/YAML in the repo or a data folder.
+- Input is PDF with a text layer. Scanned PDFs are out of scope: `extract` fails fast (mean chars per page < 200) with "no text layer; OCR unsupported" and a non-zero exit.
+- Personal tool first. Shareable by cloning the repo plus a profile file. No accounts. Requires an `ANTHROPIC_API_KEY` (or the `claude` CLI); the README says so.
+- Files are truth (same pattern as Ella's Atlas tool): profile, spans, lessons, checks, and concept memory are plain JSON/YAML under `data/`. `data/papers/*/source.pdf` and `crops/` are gitignored (copyrighted PDFs never enter the repo); `spans.json` and `lesson.json` are committed.
+- A lesson is one self-contained HTML file. It cannot write back to the repo. Anything the player records (your prediction) lives in the browser's localStorage and does not feed memory in v1.
 - Git discipline: feature branches, small commits, merges to main, so every change is traceable.
-- Tooling on this Mac: Python 3.12, Node 24, bun. No pypdf or PyMuPDF installed yet; no poppler.
-- The LLM is called through the Claude API (or `claude -p`, as Atlas does). Generation may take a couple of minutes per paper; that is acceptable.
+- Tooling on this Mac: Python 3.12, Node 24, bun. PyMuPDF and Pydantic are not installed yet; no poppler.
+- Generation is two LLM calls plus at most one retry, roughly 3-4 minutes per paper. Acceptable.
 
 ## Premises (agreed)
 
 1. **Breadth over mastery.** Success = "I get what this paper did, why, and what the key knobs are" in 10-15 minutes. Recall and testing are optional deep-mode extras.
-2. **The unit of output is a lesson, not a page.** Prerequisite ladder built from the profile, then story scenes: world before + problem, what they tried, your prediction, what they found, what changed + takeaways. Each scene is one screen with an analogy from things you know, an optional widget, and a "paper's words" control. The depth dial (brief / standard / deep) controls ladder rungs and scene count. *Revised twice in session: from "one interactive page" after Ella's pushback, then "predict before reveal" added from the Codex cold read.*
-3. **Profile captures learning signals, not learning styles.** Domains you know well (analogy sources), default depth, things to skip, and an explicit "already know this" list. Filled by a short survey; a plain editable file. "Learns over time" is deferred until there is usage data. Basis: learning-style matching has near-zero effect (d ≈ 0.04 across meta-analyses; Pashler et al. 2008; Newton 2015); a 2024 ACL study of GPT-4 style-adapted explanations found no clear comprehension gain.
-4. **Every claim traces to a source span, and a checker pass is v1.** Single-pass LLM explanations get signs, equations, and numbers wrong (Intuitive Papers' experience). Claims are typed: *paper finding* (must cite a span), *background* (must cite an outside source), *illustrative* (analogy, labeled as such).
-5. **Widgets come from a reviewed template library.** The LLM picks a template and fills parameters, labels, and bounds; trusted code implements the math. Generated code is never executed. Papers whose mechanism has no template get prose plus the paper's own figure. *Revised from "LLM builds self-contained widgets" after the Codex cold read; AI-generated interactives mostly fail on interaction logic (EE-Eval, 2026).*
+2. **The unit of output is a lesson, not a page.** Prerequisite rungs built from the profile, then story scenes: world before + problem, what they tried, your prediction, what they found, what changed + takeaways. Each scene is one screen with an analogy from things you know, an optional widget, and a "paper's words" control. A depth dial (brief / standard / deep) controls how many rungs and scenes you see. *Revised twice in session: from "one interactive page" after Ella's pushback, then "predict before reveal" added from the Codex cold read. Codex's "later papers revisit your earlier predictions" is struck from v1 (see localStorage constraint).*
+3. **Profile captures learning signals, not learning styles.** Domains you know well (analogy sources), default depth, things to skip, and an explicit "already know this" concept list. Filled by a short survey; a plain editable file. "Learns over time" is deferred until there is usage data. Basis: learning-style matching has near-zero effect (d ≈ 0.04 across meta-analyses; Pashler et al. 2008; Newton 2015); a 2024 ACL study of GPT-4 style-adapted explanations found no clear comprehension gain.
+4. **Every finding traces to a source span, and a checker pass is v1.** Single-pass LLM explanations get signs, equations, and numbers wrong (Intuitive Papers' experience). Claims are typed: *finding* (must cite spans, checked), *background* (outside knowledge the paper assumes; carries a citation string that is **not verified in v1** and renders with an "unchecked" tag), *illustrative* (analogy, labeled as such, never checked).
+5. **Widgets come from a reviewed template library.** The LLM picks a template id and fills parameters, labels, and bounds; trusted code implements the math. Generated code is never executed. Papers whose mechanism has no template get prose plus one of the paper's own figures. *Revised from "LLM builds self-contained widgets" after the Codex cold read; AI-generated interactives mostly fail on interaction logic (EE-Eval, 2026).*
 6. **Personal first, no accounts.** Product questions are later questions.
-7. **Every paper leaves a concept record.** Lessons tie back to prior papers. A cross-paper concept map is the v2 feature this enables.
+7. **Every paper leaves concept records.** Lessons tie back to prior papers by exact concept-id match. A cross-paper concept map is the v2 feature this enables.
 
 ## Cross-Model Perspective
 
 Codex (gpt-6-astra, fresh context, structured summary only):
 
-- **Coolest unconsidered version:** "rediscover the paper before revealing it": give the researchers' original problem, let Ella predict the outcome, then reveal what they found; later papers revisit earlier predictions across fields. Adopted into premise 2.
+- **Coolest unconsidered version:** "rediscover the paper before revealing it": give the researchers' original problem, let Ella predict the outcome, then reveal what they found. Adopted into premise 2 (the cross-paper prediction revisit was dropped as infeasible without a server).
 - **What excites her most:** "let me change a variable and see what breaks." Core loop: predict → manipulate → explain → reveal evidence.
 - **50% shelf-buy:** marimo for reactive sliders and plots. Rejected as the player (reads as a notebook, not a story); the other 50% Codex named (extraction, prerequisite selection, narrative sequencing, verified widget models, quote navigation, concept memory) is the product and is what we build.
-- **Weekend build:** one excellent ten-minute lesson from one paper Ella already understands; Pydantic-validated lesson JSON; PyMuPDF spans with page indices and bounding boxes; span IDs not model-written quotes; template widgets, never eval; checker pass blocks unresolved claims; explicit "already know this" memory. Adopted nearly whole into the recommended approach.
+- **Weekend build:** one excellent ten-minute lesson from one paper Ella already understands; Pydantic-validated lesson JSON; PyMuPDF spans with page indices and bounding boxes; span ids not model-written quotes; template widgets, never eval; checker pass; explicit "already know this" memory. Adopted nearly whole into the recommended approach.
 
 Synthesis: Codex reinforced premises 4 and 7, sharpened 2, and overturned the widget half of 5. Disagreement only on marimo.
 
 ## Approaches Considered
 
-- **A: Python pipeline + one self-contained HTML file per lesson (CHOSEN).** CLI does survey, ingest, generate, check, render. No server. Completeness 7/10.
+- **A: Python pipeline + one self-contained HTML file per lesson (CHOSEN).** CLI does survey, extract, generate, check, render. No server. Completeness 7/10.
 - **B: Local web app (FastAPI + Vite player, PDF.js highlights, streaming scenes, library view).** Completeness 10/10. Ella chose B, then reversed to A. Deferred: it is the upgrade path once the lesson format is stable across ~5 papers or a non-technical friend needs it. Decision logged (id 5fa11115).
 - **C: marimo notebook as the player.** Rejected: notebook layout fights scene navigation and the quote panel.
 
 ## Recommended Approach
 
-**A: Python pipeline, HTML lesson files.** Layout (from the Codex proposal, adjusted):
+**A: Python pipeline, HTML lesson files.**
+
+### Layout
 
 ```
 learningtool/
-  learn                    # CLI entry: survey | ingest | generate | check | render | open
+  learn                    # CLI entry (see Commands)
   learningtool/
-    schema.py              # Pydantic: Profile, Span, Lesson, Scene, Claim, Widget, ConceptRecord
-    extract.py             # PyMuPDF -> spans.json (text, page, bbox), page crop PNGs on demand
-    prereq.py              # profile + paper -> prerequisite ladder (LLM)
-    generate.py            # spans + profile + memory -> lesson.json (LLM, structured output)
-    check.py               # claims vs spans: numbers, signs, quotes present, kinds valid
-    render.py              # lesson.json -> lesson.html (Jinja template + inline JS/CSS)
-    memory.py              # concepts.json read/append, tie-back lookup
+    schema.py              # Pydantic models below
+    extract.py             # PyMuPDF -> spans.json + figures.json; crop rendering
+    prereq.py              # profile + spans -> prerequisite rungs (LLM call 1)
+    generate.py            # spans + profile + memory + rungs -> lesson.json (LLM call 2, structured output)
+    check.py               # checker rules below -> checks.json
+    render.py              # lesson.json + checks.json -> lesson.html (Jinja, inline CSS/JS, base64 crops)
+    memory.py              # concepts.json read/append; tie-back lookup
   widgets/
     registry.py            # template ids, parameter schemas, bounds
-    templates/*.js         # canvas widgets: threshold-learning-curve, dose-response, before-after-bars, ...
+    templates/<id>.mjs     # each exports pure model(params, x) plus a canvas draw(); pytest runs model() via node
   player/                  # scene player JS/CSS inlined into every lesson.html
   data/
-    profile.yaml
-    papers/<sha256>/{source.pdf, spans.json, lesson.json, checks.json, lesson.html, crops/}
+    profile.yaml           # created by `learn survey`; profile.example.yaml is committed
+    papers/<sha256>/{source.pdf (ignored), spans.json, figures.json, lesson.json, checks.json, lesson.html, crops/ (ignored)}
     memory/concepts.json
   tests/
   docs/designs/            # this document
 ```
 
-Lesson data shape (versioned, Pydantic-validated):
+### Commands
+
+- `learn survey` writes `data/profile.yaml`. Any other command errors with "run `learn survey`" if it is missing.
+- `learn extract <pdf>` copies the PDF to `data/papers/<sha256>/source.pdf` and writes `spans.json` and `figures.json`. Skips if `spans.json` exists unless `--force`.
+- `learn generate <paper_id>` runs prereq then generate, writes `lesson.json`.
+- `learn check <paper_id>` writes `checks.json`. Exit code 0 if all findings verified, 1 otherwise.
+- `learn render <paper_id>` writes `lesson.html`.
+- `learn open <paper_id>` opens `lesson.html` in the default browser.
+- `learn lesson <pdf>` chains extract → generate → check → (one regenerate retry with the failure list attached if check fails) → render → open.
+
+### Data shapes (versioned, Pydantic-validated; `Scene` is flat, no unions, so the structured-output schema stays inside the API's supported subset)
 
 ```
-Lesson  {schema_version, paper_id, title, depth, prerequisites[Scene], scenes[Scene], concepts[ConceptRecord]}
-Scene   {id, role: prereq|before|problem|tried|predict|found|changed, title, analogy, prose,
-         prediction?: {question, options[], reveal_scene_id}, claims[Claim], widget?: Widget,
-         figure?: {page, bbox}, prior_links[{concept_id, paper_id, note}]}
-Claim   {text, kind: finding|background|illustrative, span_ids[], source?: {citation}, status: verified|unverified|failed}
-Widget  {template_id, params{}, bounds{}, labels{}, assumptions[], evidence_span_ids[], expected_behaviors[]}
+Profile       {schema_version, name, known_domains[str], default_depth, skip_topics[str], known_concepts[str]}
+Span          {id, page, text_raw, text_display, bboxes[[x0,y0,x1,y1]]}   # sentence-level; text_display is dehyphenated + ligature-folded; one bbox per line
+Figure        {id, page, bbox, caption_span_id}
+Lesson        {schema_version, paper_id, title, scenes[Scene], concepts[ConceptRecord]}
+Scene         {id, role: prereq|before|problem|tried|predict|found|changed, min_depth: brief|standard|deep,
+               title, analogy, prose, claims[Claim], widget_id?, figure_id?,
+               prediction_question?, prediction_options[str], prediction_answer_index?, reveal_scene_id?,
+               prior_links[PriorLink]}
+Claim         {text, kind: finding|background|illustrative, quote_span_id?, quote_start?, quote_end?, span_ids[], citation?, status: unverified|verified|failed|unchecked}
+Widget        {id, template_id, params{}, bounds{}, labels{}, assumptions[str], evidence_span_ids[],
+               expected_behaviors[{param, param_delta: +|-, output, output_delta: +|-}]}
+ConceptRecord {concept_id (slug), name, one_line, scene_id}
+PriorLink     {concept_id, paper_id, note}
 ```
 
-Player (from the approved wireframe `~/.gstack/projects/ellabellae-learningtool/designs/mockup-20260912/wireframe-scene.png`):
-story arc as top navigation (italic dots for prerequisite rungs), scene on the left (analogy prose, then widget), "The paper's words" on the right (quote from span text, page, crop with highlight, claim list with kind and status tags), depth dial and Next always visible, tie-back line under the scene when memory has a match.
+Widgets live in `Lesson.widgets[]` and scenes reference them by id. Prerequisite rungs are scenes with `role: prereq`; there is no separate list.
 
-Checker rules for v1: every `finding` claim has ≥1 span id that exists; any number in a finding claim appears in its cited spans; every quote rendered is byte-identical to span text; `background` claims carry a citation; widget params are within registry bounds; a lesson with a `failed` claim renders with that scene flagged, never silently.
+### Depth dial (resolves the open question)
+
+Generate `deep` once. Every scene carries `min_depth`. The player filters client-side: `brief` shows scenes with `min_depth: brief`, and so on. The dial is a view, not a regeneration. If step 3 shows the standard lesson is too long, the filter earns its place; otherwise the dial ships as-is because it is a few lines of JS.
+
+### Quotes and crops
+
+The "paper's words" for a finding is `spans[quote_span_id].text_display[quote_start:quote_end]`. The LLM never emits quote text, only span id and offsets. `render` inlines a base64 PNG crop at 110 DPI for every cited span (highlight drawn from `bboxes[]`), so a lesson is self-contained and stays under a few MB.
+
+### Checker rules (v1)
+
+1. Every `finding` claim has ≥1 `span_ids` that exist; if it has a quote, the offsets slice the span's `text_display`.
+2. Numeric tokens in a `finding` claim's text (regex, compared as strings with trailing zeros stripped; no unit or word normalization) all appear in its cited spans' `text_display`. False failures from "twelve" vs "12" are accepted in v1 and documented.
+3. `background` claims carry a non-empty `citation`; status becomes `unchecked`, never `verified`.
+4. `illustrative` claims are skipped.
+5. Every `widget.template_id` exists in the registry and every param is within its bounds. On failure the widget is dropped from the scene and the scene keeps its `figure_id` if any.
+6. Every `expected_behavior` holds when `model()` is evaluated at the low and high end of that param.
+7. Every `reveal_scene_id` and `figure_id` and `prior_links.paper_id` resolves.
+
+`unverified` = not yet checked. `failed` = checked and rejected. A `failed` claim renders with a visible flag on its scene; the lesson never renders silently clean.
+
+### Memory
+
+`generate` receives the existing `concepts.json` slugs in its prompt and must reuse a slug when the concept matches; `memory.py` matches `prior_links` by exact slug. New `ConceptRecord`s are appended after a successful check. "Already know this" is a profile field the user edits, not an inference.
+
+### Player
+
+From the approved wireframe `~/.gstack/projects/ellabellae-learningtool/designs/mockup-20260912/wireframe-scene.png`: story arc as top navigation (italic dots for prerequisite rungs), scene on the left (analogy prose, then widget or figure), "The paper's words" on the right (quote, page, crop with highlight, claim list with kind and status tags), depth dial and Next always visible, tie-back line under the scene when `prior_links` is non-empty. The prediction scene shows options, records the choice in localStorage, and the reveal scene shows the paper's finding with right/wrong when `prediction_answer_index` is set.
 
 ## Open Questions
 
-- Depth dial behavior: regenerate the lesson per depth, or generate `deep` once and hide scenes for `brief`? (Cheaper to generate once and filter; quality may differ. Decide in eng review.)
-- Which LLM call path: Anthropic Python SDK with structured output, or `claude -p` as Atlas does? SDK gives schema-enforced JSON; `claude -p` needs no API key. Decide in eng review.
-- First three widget templates. Candidate for the first paper (EEG upper-alpha neurofeedback): a threshold-learning curve. Others likely: dose-response, before/after comparison, a 2x2 outcome grid.
-- How the survey asks about "domains you know well" so analogies actually land (free text vs. a checklist seeded from her Zotero subjects).
+- LLM call path: Anthropic Python SDK with structured output (schema-enforced JSON, needs an API key) or `claude -p` as Atlas does (no key, JSON must be validated after the fact). Decide in eng review; the schema is flat enough for either.
+- First three widget templates after `threshold-learning-curve`: likely `dose-response`, `before-after-bars`, `two-by-two-outcome`.
+- Survey wording for `known_domains` so analogies land: free text vs. a checklist seeded from Zotero subjects.
 
 ## Success Criteria
 
-- `learn ingest <pdf>` on the EEG upper-alpha neurofeedback paper produces a lesson that opens in a browser, and Ella can say what the paper did, why, and its key knobs in ≤15 minutes without opening the PDF.
-- Every "paper's words" quote in that lesson is verbatim from the PDF (spot-checked against the page).
+- `learn lesson <pdf>` on the EEG upper-alpha neurofeedback paper produces a lesson that opens in a browser, and Ella can say what the paper did, why, and its key knobs in ≤15 minutes without opening the PDF.
+- Every "paper's words" quote in that lesson is verbatim from the PDF (spot-checked against the page crop).
 - At least one scene has a working widget whose slider changes the chart in the direction the paper implies.
 - The prediction scene appears before the result scene and reveals the paper's finding after a guess.
 - A second paper's lesson shows at least one tie-back to the first.
-- Two friends run the survey and get lessons that differ in prerequisite rungs.
+- A second `profile.yaml` on this Mac (different `known_domains` and `known_concepts`) yields different prerequisite rungs for the same paper. Friends running it is v1.1.
 
 ## Distribution Plan
 
-Git clone plus `pip install -e .`; `learn` on PATH. Lessons are single HTML files, so any finished lesson can be sent to anyone. No CI in v1 beyond `pytest` on push (GitHub Actions, one workflow). Deployment is deferred to Approach B.
+Git clone plus `pip install -e .`; `learn` on PATH; `ANTHROPIC_API_KEY` in the environment. Lessons are single HTML files, so any finished lesson can be sent to anyone. CI is one GitHub Actions workflow running `pytest` on push. Deployment is deferred to Approach B.
 
 ## Next Steps
 
 Each is its own feature branch, merged to main when green:
 
-1. `feat/scaffold`: package layout, `learn` CLI skeleton, Pydantic schema with a fixture lesson, pytest, GitHub Actions workflow.
-2. `feat/extract`: PyMuPDF spans with page + bbox; crop rendering; test on the EEG paper; a visual spot-check script.
-3. `feat/player`: render a fixture lesson.json to lesson.html with the wireframe layout; story arc, quote panel, depth dial, prediction scene reveal. Judge it by eye before any LLM is involved.
-4. `feat/widgets`: registry plus the first template (threshold-learning curve) with parameter bounds and a directional test.
-5. `feat/generate`: survey → profile.yaml; prerequisite ladder; lesson generation with structured output; claims point at span ids.
-6. `feat/check`: checker rules above; failed claims flagged in the player.
-7. `feat/memory`: concepts.json append on ingest; tie-back lookup on generate; second paper end to end.
+1. `feat/scaffold`: package layout, `learn` CLI skeleton, Pydantic schema with a fixture `lesson.json`, `.gitignore` for PDFs and crops, `profile.example.yaml`, pytest, GitHub Actions workflow, README with the API-key requirement. Validate the emitted JSON schema against the SDK's structured-output support before writing any prompt.
+2. `feat/extract`: PyMuPDF sentence spans with `text_raw`, `text_display`, per-line `bboxes`; figures; crop rendering; the no-text-layer guard; test on the EEG paper with a visual spot-check script.
+3. `feat/player`: render the fixture `lesson.json` to `lesson.html` with the wireframe layout: story arc, quote panel, depth filter, prediction and reveal. Judge it by eye before any LLM is involved.
+4. `feat/widgets`: registry plus `threshold-learning-curve.mjs` with `model()` and `draw()`, bounds, and the node-subprocess directional test.
+5. `feat/generate`: `learn survey`; prereq call; generate call with structured output; claims point at span ids and offsets; memory slugs in the prompt.
+6. `feat/check`: the seven rules; flagged rendering; the one-retry loop in `learn lesson`.
+7. `feat/memory`: `concepts.json` append; tie-back lookup; second paper end to end.
 
 ## The Assignment
 
