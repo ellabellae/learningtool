@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ meta.title }} · learningtool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>{{ css | safe }}</style>
+</head>
+<body data-paper="{{ paper_id }}" data-profile="{{ profile_name }}" data-default-depth="{{ default_depth }}">
+{% if audit_skipped %}<div class="banner" role="status">Meaning check skipped for this lesson; numbers and quotes are still checked.</div>{% endif %}
+{% if not checks_present %}<div class="banner" role="status">This lesson has not been checked yet. Claims show as unchecked.</div>{% endif %}
+
+<header class="top">
+  <span class="mark">learningtool · paper lesson</span>
+  <nav class="arc" aria-label="Lesson scenes">
+    <ol id="arc">
+      <li data-idx="0" data-depth="brief"><button type="button" aria-current="true"><i></i><span>Start</span></button></li>
+      {% for s in scenes %}
+      <li data-idx="{{ loop.index }}" data-depth="{{ s.min_depth }}" class="{{ 'pre' if s.role == 'prereq' else '' }}{{ ' flag' if s.flagged else '' }}"><button type="button"><i></i><span>{{ s.arc_label }}</span></button></li>
+      {% endfor %}
+      <li data-idx="{{ scenes|length + 1 }}" data-depth="brief"><button type="button"><i></i><span>Close</span></button></li>
+    </ol>
+  </nav>
+  <span class="ptitle" title="{{ meta.title }}">{{ header_title }}</span>
+  <span class="counter" id="counter" aria-live="polite"></span>
+  <button type="button" class="menu" id="menu" aria-haspopup="dialog">Scenes</button>
+</header>
+
+<main id="main">
+  <!-- Title scene -->
+  <section class="scene title" data-idx="0" data-role="title" data-depth="brief" tabindex="-1">
+    <p class="kick">A paper lesson</p>
+    <h1 class="hook">{{ hook }}</h1>
+    <p class="pmeta"><b>{{ meta.title }}</b><br>
+      {% if meta.authors %}{{ meta.authors | join(', ') }} · {% endif %}{% if meta.venue %}{{ meta.venue }} · {% endif %}{% if meta.year %}{{ meta.year }} · {% endif %}{{ meta.pages }} page{{ 's' if meta.pages != 1 else '' }}</p>
+    <p class="dl">Depth</p>
+    <div class="dial" role="radiogroup" aria-label="Depth">
+      {% for d in ['brief', 'standard', 'deep'] %}
+      <label><input type="radio" name="depth" value="{{ d }}"{% if d == default_depth %} checked{% endif %}> {{ d }} · {{ depth_counts[d].scenes }} scenes · {{ depth_counts[d].minutes }} min</label>
+      {% endfor %}
+    </div>
+    <p><button type="button" class="btn p" id="start">Start →</button></p>
+    {% set rungs = scenes | selectattr('role', 'equalto', 'prereq') | list %}
+    {% if rungs %}<p class="dl">First, {{ rungs|length }} thing{{ 's' if rungs|length != 1 else '' }} the paper assumes: {{ rungs | map(attribute='arc_label') | join(', ') }}. Then the paper.</p>{% endif %}
+  </section>
+
+  {% for s in scenes %}
+  <section class="scene {{ s.role }}{{ ' flagged' if s.flagged else '' }}" data-idx="{{ loop.index }}" data-id="{{ s.id }}" data-role="{{ s.role }}" data-depth="{{ s.min_depth }}" data-seconds="{{ s.seconds }}"{% if s.reveal and s.reveal.note %} data-reveal-note="{{ s.reveal.note }}"{% endif %} hidden tabindex="-1">
+    {% for f in s.flags %}<div class="strip" role="note">{{ f }}</div>{% endfor %}
+    {% if s.widget_removed_reason %}{% endif %}
+    <p class="kick">{{ s.kicker }}</p>
+    <h1 class="headline">{{ s.headline }}</h1>
+    {% if s.analogy_line %}<p class="ana">{{ s.analogy_line }}</p>{% endif %}
+    {% for t in s.tie_backs %}
+    <p class="tie">You've seen this idea: {% if t.href %}<a href="{{ t.href }}">{{ t.paper_title }}</a>{% else %}<em>{{ t.paper_title }}</em>{% endif %}, read {{ t.read_date }}{% if t.note %}, {{ t.note }}{% endif %}.</p>
+    {% endfor %}
+
+    {% if s.role == 'predict' %}
+      <p class="prose">{{ s.prose }}</p>
+      <fieldset class="predict" data-reveal="{{ s.predict.reveal_id }}"{% if s.predict.answer_index is not none %} data-answer="{{ s.predict.answer_index }}"{% endif %}>
+        <legend class="visually-hidden">{{ s.predict.question }}</legend>
+        {% for o in s.predict.options %}
+        <label class="opt"><input type="radio" name="pred-{{ s.id }}" value="{{ loop.index0 }}"> <span>{{ o }}</span></label>
+        {% endfor %}
+      </fieldset>
+      <p class="predict-actions">
+        <button type="button" class="btn p lock" disabled>Lock it in →</button>
+        <button type="button" class="linkish skip">Skip prediction</button>
+      </p>
+      <p class="locked-note" hidden>Locked in. Next shows what the paper found.</p>
+    {% elif s.role == 'found' and s.reveal %}
+      <div class="said" data-predict="{{ s.reveal.predict_id }}" hidden></div>
+      {% if s.reveal.quote %}
+      <blockquote class="rev" data-reveal-quote><p>“{{ s.reveal.quote }}”</p><footer>p. {{ s.reveal.page }} · Cited · the paper's own words</footer></blockquote>
+      {% endif %}
+      <p class="verd" data-verdict hidden></p>
+      <p class="prose">{{ s.prose }}</p>
+    {% else %}
+      <p class="prose">{{ s.prose }}</p>
+    {% endif %}
+
+    {% for c in s.claims if c.kind == 'finding' and c.quote and not (s.reveal and s.reveal.claim_id == c.id) %}
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="{{ c.id }}">“{{ c.source_line }}” · p. {{ c.page }}</button> <span class="chip">{{ c.chip }}</span></p>
+    {% endfor %}
+
+    {% if s.widget %}
+    <div class="widget" data-template="{{ s.widget.template_id }}" data-widget="{{ s.widget.id }}" data-config='{{ s.widget.config }}'>
+      <p class="q">{{ s.widget.task_question }}</p>
+      <p class="badge">Illustrative model, not this study's measurements{% if s.widget.evidence %} · <button type="button" class="linkish open-drawer" data-span="{{ s.widget.evidence_span_id }}">the paper's numbers</button>{% endif %}</p>
+      <div class="chart"><canvas width="600" height="220" aria-label="Interactive model"></canvas><p class="unavailable" hidden>Interactive model unavailable: template “{{ s.widget.template_id }}” is not bundled.</p></div>
+      <div class="sliders"></div>
+      <p class="read"><span class="readout"></span> · <button type="button" class="linkish reset">reset</button></p>
+      {% if s.widget.evidence %}<p class="evidence">The paper: “{{ s.widget.evidence }}” (p. {{ s.widget.evidence_page }})</p>{% endif %}
+    </div>
+    {% elif s.widget_removed_reason %}
+    <p class="removed">Interactive model removed: {{ s.widget_removed_reason }}.</p>
+    {% endif %}
+
+    <template class="drawer-content">
+      {% if s.claims %}
+      <h3>Claims in this scene</h3>
+      <ul class="claims">
+        {% for c in s.claims %}
+        <li data-claim="{{ c.id }}"{% if c.span_id %} data-span="{{ c.span_id }}"{% endif %}>
+          <span>{{ c.text }}</span> <span class="chip">{{ c.chip }}</span>
+          {% if c.quote %}<blockquote class="quote"><p>“{{ c.quote }}”</p><footer>p. {{ c.page }} · shown exactly as extracted</footer></blockquote>
+          {% if c.crop %}<figure class="crop"><img src="{{ c.crop }}" alt="Page {{ c.page }} with the cited sentence highlighted"><figcaption><button type="button" class="linkish zoom">zoom</button></figcaption></figure>{% else %}<p class="dl">Page crop unavailable (source PDF not present at render time).</p>{% endif %}
+          {% elif c.citation %}<p class="dl">Source: {{ c.citation }} (outside the paper; not checked in v1)</p>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="dl">No paper's words for this rung.</p>
+      {% endif %}
+      {% if s.not_shown %}
+      <h3>Not shown</h3>
+      <ul class="notshown">{% for n in s.not_shown %}<li>Checker removed: “{{ n.text }}” — {{ n.reason }}.</li>{% endfor %}</ul>
+      {% endif %}
+    </template>
+  </section>
+  {% endfor %}
+
+  <!-- Closing scene -->
+  <section class="scene close" data-idx="{{ scenes|length + 1 }}" data-role="close" data-depth="brief" hidden tabindex="-1">
+    <p class="kick">Close</p>
+    <h1 class="headline">What you take with you</h1>
+    <div class="closing">
+      <h3>Your prediction</h3>
+      <p id="close-prediction">You did not make a prediction.</p>
+      {% if close_finding %}<h3>The paper's finding</h3><blockquote class="quote"><p>“{{ close_finding.quote }}”</p><footer>p. {{ close_finding.page }}</footer></blockquote>{% endif %}
+      {% if concepts %}
+      <h3>You now have</h3>
+      <ul class="concepts">{% for c in concepts %}<li><b>{{ c.name }}</b> — {{ c.one_line }}</li>{% endfor %}</ul>
+      {% endif %}
+      <h3>The paper</h3>
+      <p class="cite">{{ citation }}</p>
+    </div>
+    <p><button type="button" class="btn" id="restart">Back to start</button></p>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="dial small" role="radiogroup" aria-label="Depth">
+    {% for d in ['brief', 'standard', 'deep'] %}<label><input type="radio" name="depth-foot" value="{{ d }}"{% if d == default_depth %} checked{% endif %}> {{ d }}</label>{% endfor %}
+  </div>
+  <div>
+    <button type="button" class="btn" id="back">← Back</button>
+    <button type="button" class="btn p" id="next">Next →</button>
+  </div>
+</footer>
+
+<dialog id="drawer" aria-label="The paper's words"><div class="drawer-inner"><button type="button" class="close-drawer linkish" aria-label="Close">Close</button><div id="drawer-body"></div></div></dialog>
+<dialog id="scene-menu" aria-label="Scenes"><ol id="menu-list"></ol><button type="button" class="linkish close-menu">Close</button></dialog>
+<div class="visually-hidden" aria-live="polite" id="announce"></div>
+
+<script>{{ templates_js | safe }}</script>
+<script>{{ js | safe }}</script>
+</body>
+</html>
