@@ -1,0 +1,13 @@
+# Copy to data/profile.yaml (or run `learn survey`). Learning signals, not learning styles:
+# what you already know shapes analogies and skips rungs; depth is a default, not a diagnosis.
+schema_version: 1
+name: example
+known_domains:
+  - biomedical engineering
+  - running
+  - cooking
+default_depth: standard
+skip_topics: []
+known_concepts:
+  - what an LLM is
+  - p-values
