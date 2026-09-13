@@ -1,0 +1,7 @@
+[
+  {"id": "sp-p2-14", "page": 2, "text": "Previous studies have reported a positive correlation between upper alpha power and working memory performance.", "bboxes": [[50.0, 300.0, 285.0, 312.0], [50.0, 313.0, 210.0, 325.0]]},
+  {"id": "sp-p4-03", "page": 4, "text": "Participants received visual feedback whenever upper alpha amplitude exceeded an individually determined threshold.", "bboxes": [[310.0, 120.0, 545.0, 132.0], [310.0, 133.0, 470.0, 145.0]]},
+  {"id": "sp-p6-08", "page": 6, "text": "Working memory performance improved significantly in the neurofeedback group compared with the control group.", "bboxes": [[50.0, 400.0, 285.0, 412.0], [50.0, 413.0, 240.0, 425.0]]},
+  {"id": "sp-p6-09", "page": 6, "text": "No significant change was observed in the control group across sessions.", "bboxes": [[50.0, 426.0, 285.0, 438.0]]},
+  {"id": "sp-p8-02", "page": 8, "text": "These results suggest that upper alpha neurofeedback training could be used to enhance cognitive performance.", "bboxes": [[310.0, 200.0, 545.0, 212.0], [310.0, 213.0, 500.0, 225.0]]}
+]
