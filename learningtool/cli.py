@@ -98,6 +98,55 @@ def cmd_list(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_extract(args: argparse.Namespace) -> int:
+    """PDF -> data/papers/<sha256>/{source.pdf, spans.json, paper_meta.json}."""
+    import json
+    import shutil
+    import time
+
+    from .extract import NoTextLayer, extract, sha256_of
+    from .schema import dump
+
+    pdf = Path(args.pdf)
+    if not pdf.exists():
+        print(f"no such file: {pdf}", file=sys.stderr)
+        return 1
+    paper_id = sha256_of(pdf)
+    paper_dir = PAPERS_DIR / paper_id
+    spans_path = paper_dir / "spans.json"
+    if spans_path.exists() and not args.force:
+        print(f"extract  already done for {paper_id[:12]} (use --force to redo)")
+        return 0
+    t0 = time.monotonic()
+    try:
+        result = extract(pdf)
+    except NoTextLayer as exc:
+        print(f"extract  refused: {exc}", file=sys.stderr)
+        return 1
+    paper_dir.mkdir(parents=True, exist_ok=True)
+    if not (paper_dir / "source.pdf").exists():
+        shutil.copyfile(pdf, paper_dir / "source.pdf")
+    spans_path.write_text(json.dumps([s.model_dump() for s in result.spans], ensure_ascii=False) + "\n", encoding="utf-8")
+    (paper_dir / "paper_meta.json").write_text(dump(result.meta), encoding="utf-8")
+    chars = sum(len(s.text) for s in result.spans)
+    print(f"extract  {result.meta.title}")
+    print(
+        f"         {result.meta.pages} pages · {len(result.spans)} sentences · {chars // 1000}k chars"
+        f"{' · stopped at References' if result.stopped_at_references else ''} · {time.monotonic() - t0:.1f}s"
+    )
+    print(f"         paper id {paper_id[:12]}")
+    return 0
+
+
+def cmd_spotcheck(args: argparse.Namespace) -> int:
+    from .spotcheck import spotcheck
+
+    paper_id = resolve_paper_id(args.paper_id)
+    out = spotcheck(PAPERS_DIR / paper_id / "source.pdf", PAPERS_DIR / paper_id / "spotcheck")
+    print("\n".join(str(p) for p in out))
+    return 0
+
+
 def cmd_not_yet(args: argparse.Namespace) -> int:
     print(f"`learn {args.command}` is not built yet; it arrives in {NOT_YET[args.command]}.", file=sys.stderr)
     return 2
@@ -114,7 +163,8 @@ def build_parser() -> argparse.ArgumentParser:
     with_profile(sub.add_parser("survey", help="write a profile")).set_defaults(func=cmd_survey)
     sub.add_parser("list", help="papers, profiles, and unread lessons").set_defaults(func=cmd_list)
 
-    p = sub.add_parser("extract", help="PDF -> spans.json"); p.add_argument("pdf"); p.add_argument("--force", action="store_true"); p.set_defaults(func=cmd_not_yet)
+    p = sub.add_parser("extract", help="PDF -> spans.json"); p.add_argument("pdf"); p.add_argument("--force", action="store_true"); p.set_defaults(func=cmd_extract)
+    p = sub.add_parser("spotcheck", help="draw every span's boxes on its page (PNG per page)"); p.add_argument("paper_id"); p.set_defaults(func=cmd_spotcheck)
     for name in ("generate", "audit", "check", "repair", "render", "open"):
         p = with_profile(sub.add_parser(name)); p.add_argument("paper_id")
         if name == "generate":
@@ -126,7 +176,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    if args.command not in ("survey", "list", "extract") and hasattr(args, "profile"):
+    if args.command not in ("survey", "list", "extract", "spotcheck") and hasattr(args, "profile"):
         try:
             load_profile(args.profile)
         except ProfileError as exc:
