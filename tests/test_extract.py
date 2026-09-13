@@ -49,6 +49,12 @@ def test_caption_kept_and_label_not_split(extraction):
     assert CAPTION in [s.text for s in extraction.spans]
 
 
+def test_boilerplate_and_title_not_spans(extraction):
+    texts = [s.text for s in extraction.spans]
+    assert not any("©" in t or "All rights reserved" in t or t.startswith("978-") for t in texts)
+    assert TITLE not in texts  # the title lives in PaperMeta, not as a citable sentence
+
+
 def test_every_span_has_line_boxes_on_its_page(extraction, synthetic_pdf):
     doc = pymupdf.open(synthetic_pdf)
     for s in extraction.spans:

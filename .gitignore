@@ -3,6 +3,8 @@ data/papers/*/source.pdf
 data/papers/*/crops/
 # Rendered lessons embed the crops as base64 and run to several MB.
 data/papers/*/lessons/*/lesson.html
+# Spot-check renders are full page images of the paper.
+data/papers/*/spotcheck/
 # Your own profile is personal; the example is committed.
 data/profile.yaml
 
