@@ -214,8 +214,9 @@
       const label = document.createElement("label"); label.htmlFor = id;
       const val = document.createElement("span"); val.className = "val";
       label.append(document.createTextNode(cfg.labels[name] || name), val);
+      const spec = (tpl.manifest.params || {})[name] || {};
       const input = document.createElement("input");
-      input.type = "range"; input.id = id; input.min = lo; input.max = hi; input.step = (hi - lo) / 100; input.value = params[name];
+      input.type = "range"; input.id = id; input.min = lo; input.max = hi; input.step = spec.step || (hi - lo) / 100; input.value = params[name];
       const nudge = document.createElement("div"); nudge.className = "nudge"; nudge.textContent = cfg.nudges[name] || "";
       const wrap = document.createElement("div"); wrap.append(label, input, nudge); sliders.appendChild(wrap);
       inputs[name] = { input, val };
@@ -232,7 +233,7 @@
     w.querySelector(".reset").addEventListener("click", () => { Object.entries(inputs).forEach(([n, { input }]) => { input.value = start[n]; }); draw(); });
     draw();
   });
-  function fmt(v, unit) { const s = Math.abs(v) >= 100 ? v.toFixed(0) : Math.abs(v) >= 10 ? v.toFixed(1) : v.toFixed(2); return unit ? `${s} ${unit}` : s; }
+  function fmt(v, unit) { const s = Number.isInteger(v) ? String(v) : Math.abs(v) >= 100 ? v.toFixed(0) : Math.abs(v) >= 10 ? v.toFixed(1) : v.toFixed(2); return unit ? `${s} ${unit}` : s; }
 
   // ---- wiring -----------------------------------------------------------------
   document.getElementById("start").addEventListener("click", () => step(1));
