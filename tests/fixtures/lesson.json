@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "paper_id": "3f9a1c7e2b8d4a6f5e0c9b1d2a3f4e5c6d7b8a9f0e1d2c3b4a5f6e7d8c9b0a1f",
+  "profile_name": "example",
+  "paper_meta": {
+    "title": "EEG-based upper alpha neurofeedback training improves working memory performance",
+    "authors": ["Zoefel, B.", "Huster, R. J.", "Herrmann, C. S."],
+    "venue": "NeuroImage",
+    "year": 2011,
+    "pages": 9
+  },
+  "hook_question": "Can you train your brain to make more of one wave, and does it help you remember?",
+  "scenes": [
+    {
+      "id": "s-eeg", "role": "prereq", "min_depth": "standard",
+      "headline": "EEG measures the brain's rhythms from the scalp",
+      "analogy_line": "Like listening to a stadium crowd through the wall: you can't hear one voice, but you can hear the chant.",
+      "prose": "Electrodes on the scalp pick up the summed activity of millions of neurons. The signal is sorted into frequency bands; upper alpha sits around 10 to 12 cycles per second.",
+      "claims": [
+        {"id": "c-eeg-1", "text": "Upper alpha is a band around 10 to 12 Hz.", "kind": "background", "citation": "Klimesch, W. (1999). Brain Research Reviews 29(2-3)."}
+      ]
+    },
+    {
+      "id": "s-nfb", "role": "prereq", "min_depth": "standard",
+      "headline": "Neurofeedback shows you a brain signal so you can learn to change it",
+      "analogy_line": "Like a heart-rate monitor during a run, but for one brain rhythm.",
+      "prose": "A participant watches a bar that tracks one feature of their own EEG and tries to move it. Over sessions the brain can learn to produce more of that feature."
+    },
+    {
+      "id": "s-problem", "role": "problem", "min_depth": "brief",
+      "headline": "Nobody knew whether raising upper alpha would improve memory",
+      "analogy_line": "",
+      "prose": "Earlier work had linked upper alpha to working memory, but correlation is not training. The open question was whether pushing the rhythm up would move memory with it.",
+      "claims": [
+        {"id": "c-problem-1", "text": "Prior studies linked upper alpha to working memory performance.", "kind": "finding", "quote_span_id": "sp-p2-14", "span_ids": ["sp-p2-14"]}
+      ]
+    },
+    {
+      "id": "s-tried", "role": "tried", "min_depth": "brief",
+      "headline": "Feedback appeared only when upper-alpha power crossed a threshold",
+      "analogy_line": "Like a thermostat that only clicks on above a set point.",
+      "prose": "Participants received visual feedback whenever their upper alpha amplitude exceeded an individually determined threshold, over five training sessions. A control group received feedback tied to nothing.",
+      "claims": [
+        {"id": "c-tried-1", "text": "Feedback was given when upper alpha amplitude exceeded an individual threshold.", "kind": "finding", "quote_span_id": "sp-p4-03", "span_ids": ["sp-p4-03"]},
+        {"id": "c-tried-2", "text": "The thermostat comparison is an analogy, not the paper's description.", "kind": "illustrative"}
+      ],
+      "widget_id": "w-threshold"
+    },
+    {
+      "id": "s-predict", "role": "predict", "min_depth": "brief",
+      "headline": "After five sessions, what happened to working memory?",
+      "analogy_line": "Lock in a guess before the paper answers.",
+      "prose": "Pick the outcome you expect.",
+      "prediction_question": "After five sessions of upper-alpha training, what happened to working memory?",
+      "prediction_options": [
+        "Alpha rose and working memory improved",
+        "Alpha rose but working memory did not change",
+        "Neither changed",
+        "Only the control group improved"
+      ],
+      "prediction_answer_index": 0,
+      "reveal_scene_id": "s-found"
+    },
+    {
+      "id": "s-found", "role": "found", "min_depth": "brief",
+      "headline": "Alpha went up, and so did working memory",
+      "analogy_line": "",
+      "prose": "The trained group raised their upper-alpha power across sessions, and their working-memory scores rose with it. The sham group moved on neither.",
+      "claims": [
+        {"id": "c-found-1", "text": "Working memory improved in the neurofeedback group compared with the control group.", "kind": "finding", "quote_span_id": "sp-p6-08", "span_ids": ["sp-p6-08", "sp-p6-09"]}
+      ],
+      "reveal_note": "Both rose, and only in the trained group."
+    },
+    {
+      "id": "s-changed", "role": "changed", "min_depth": "brief",
+      "headline": "A trainable rhythm became a candidate memory intervention",
+      "analogy_line": "",
+      "prose": "The result made upper-alpha training a plausible tool rather than a correlation, and set up later work on who responds and how long it lasts.",
+      "claims": [
+        {"id": "c-changed-1", "text": "The authors propose upper-alpha training as a way to enhance cognitive performance.", "kind": "finding", "quote_span_id": "sp-p8-02", "span_ids": ["sp-p8-02"]}
+      ]
+    }
+  ],
+  "widgets": [
+    {
+      "id": "w-threshold",
+      "template_id": "threshold-learning-curve",
+      "params": [{"name": "threshold", "value": 0.55}, {"name": "sessions_per_week", "value": 3}],
+      "ranges": [{"name": "threshold", "lo": 0.3, "hi": 0.9}, {"name": "sessions_per_week", "lo": 1, "hi": 5}],
+      "labels": [{"name": "threshold", "text": "Reward threshold"}, {"name": "sessions_per_week", "text": "Sessions per week"}],
+      "task_question": "What happens to learning if the reward threshold is set too high?",
+      "nudges": [{"name": "threshold", "text": "too high and nobody gets rewarded; learning stalls"}, {"name": "sessions_per_week", "text": "the paper used about 3; try 1"}],
+      "readout_output": "final_power",
+      "evidence_span_ids": ["sp-p6-08"],
+      "mechanism_span_ids": ["sp-p4-03"],
+      "expected_behaviors": [
+        {"param": "threshold", "param_delta": "+", "output": "final_power", "output_delta": "-"},
+        {"param": "sessions_per_week", "param_delta": "+", "output": "final_power", "output_delta": "+"}
+      ]
+    }
+  ],
+  "concepts": [
+    {"concept_id": "eeg", "name": "EEG", "one_line": "Scalp recording of summed neural rhythms.", "scene_id": "s-eeg"},
+    {"concept_id": "neurofeedback", "name": "Neurofeedback", "one_line": "Seeing a brain signal so you can learn to change it.", "scene_id": "s-nfb"},
+    {"concept_id": "reward-threshold", "name": "Reward threshold", "one_line": "The level a signal must cross before feedback rewards it.", "scene_id": "s-tried"}
+  ],
+  "prior_links": []
+}

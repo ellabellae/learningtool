@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "paper_id": "3f9a1c7e2b8d4a6f5e0c9b1d2a3f4e5c6d7b8a9f0e1d2c3b4a5f6e7d8c9b0a1f",
+  "profile_name": "example",
+  "lesson_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "claims": [
+    {"claim_id": "c-eeg-1", "status": "unchecked"},
+    {"claim_id": "c-problem-1", "status": "cited"},
+    {"claim_id": "c-tried-1", "status": "cited"},
+    {"claim_id": "c-tried-2", "status": "unchecked"},
+    {"claim_id": "c-found-1", "status": "cited"},
+    {"claim_id": "c-changed-1", "status": "cited"}
+  ],
+  "widgets": [{"widget_id": "w-threshold", "ok": true}],
+  "scenes": []
+}
