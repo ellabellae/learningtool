@@ -22,9 +22,9 @@ def test_list_with_no_papers_prints_next_command(tmp_path: Path):
 def test_unbuilt_command_names_its_branch(tmp_path: Path):
     (tmp_path / "data").mkdir()
     (tmp_path / "data" / "profile.yaml").write_text("name: t\n", encoding="utf-8")
-    out = run(["render", "deadbeef01"], tmp_path)
+    out = run(["generate", "deadbeef01"], tmp_path)
     assert out.returncode == 2
-    assert "feat/player" in out.stderr
+    assert "feat/generate" in out.stderr
 
 
 def test_missing_profile_blocks_profile_commands(tmp_path: Path):

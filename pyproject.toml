@@ -27,6 +27,9 @@ learn = "learningtool.cli:main"
 [tool.setuptools.packages.find]
 include = ["learningtool*"]
 
+[tool.setuptools.package-data]
+learningtool = ["player/*", "prompts/*"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 markers = [
