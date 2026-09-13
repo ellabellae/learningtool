@@ -1,0 +1,16 @@
+{
+  "id": "threshold-learning-curve",
+  "name": "Threshold-gated learning curve",
+  "description": "A signal is rewarded only when it crosses a threshold; the curve shows how the signal grows across sessions. Models reward-gated learning (neurofeedback, operant conditioning, gated practice). Illustrative: shapes and rates are generic, never fitted to a study's data.",
+  "mechanism_keywords": ["threshold", "feedback", "reward", "training", "sessions", "neurofeedback"],
+  "params": {
+    "threshold": {"lo": 0.1, "hi": 1.0, "default": 0.55, "unit": "", "label": "Reward threshold"},
+    "sessions_per_week": {"lo": 1, "hi": 7, "default": 3, "step": 1, "unit": "/wk", "label": "Sessions per week"}
+  },
+  "defaults": {"threshold": 0.55, "sessions_per_week": 3},
+  "units": {"threshold": "", "sessions_per_week": "/wk"},
+  "outputs": ["final_power", "sessions_to_reward"],
+  "output_labels": {"final_power": "final alpha power (normalized)", "sessions_to_reward": "sessions until reward"},
+  "axes": {"x": "session", "y": "signal power (normalized)"},
+  "sessions": 20
+}
