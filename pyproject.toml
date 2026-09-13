@@ -25,10 +25,11 @@ dev = ["pytest>=8", "pytest-timeout>=2.3"]
 learn = "learningtool.cli:main"
 
 [tool.setuptools.packages.find]
-include = ["learningtool*"]
+include = ["learningtool*", "widgets*"]
 
 [tool.setuptools.package-data]
 learningtool = ["player/*", "prompts/*"]
+widgets = ["*.mjs", "templates/*/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
