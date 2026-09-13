@@ -45,6 +45,7 @@ REFERENCES = (
 )
 
 CAPTION = "Fig. 1. Upper-alpha power per session."
+BOILERPLATE = "978-1-0000-0000-0/26/$26.00 ©2026 Synthetic Press. All rights reserved."
 
 # A TrueType font with fi/ffi ligature glyphs; base-14 Helvetica has none.
 LIGATURE_FONT_CANDIDATES = (
@@ -121,6 +122,8 @@ def build(out: Path | str) -> Path:
     p3 = doc.new_page(width=W, height=H)
     _header_footer(p3, 3)
     p3.insert_textbox(LEFT, LEFT_P3, fontsize=10.5, fontname=FONT)
+    # Publisher boilerplate inside the body column, as IEEE PDFs do; must be filtered out.
+    p3.insert_textbox(pymupdf.Rect(50, 300, 285, 330), BOILERPLATE, fontsize=8, fontname=FONT)
     p3.insert_textbox(pymupdf.Rect(310, 90, 545, 400), REFERENCES, fontsize=9.5, fontname=FONT)
 
     out.parent.mkdir(parents=True, exist_ok=True)

@@ -32,8 +32,14 @@ from .schema import PaperMeta, Span
 
 MIN_CHARS_PER_PAGE = 200
 HEADER_FOOTER_CLASSES = {"page-header", "page-footer"}
-SKIP_CLASSES = HEADER_FOOTER_CLASSES | {"table", "figure", "picture", "image"}
+# Headings and the title are navigation, not citable sentences; the title is captured in PaperMeta.
+SKIP_CLASSES = HEADER_FOOTER_CLASSES | {"table", "figure", "picture", "image", "section-header", "title"}
 REFERENCES_RE = re.compile(r"^\s*(#+\s*)?(\**)?\s*(references|bibliography|works cited)\b", re.I)
+# Publisher boilerplate that layout analysis sometimes leaves in the body.
+BOILERPLATE_RE = re.compile(
+    r"(©|\(c\)\s*\d{4}|copyright\b|^97[89]-\d|^\d{3,4}-\d{4}/\d\d/|authorized licensed use|downloaded on \d|all rights reserved)",
+    re.I,
+)
 CROP_PAD_PT = 24
 CROP_DPI = 110
 
@@ -100,6 +106,8 @@ def extract(pdf: Path | str) -> Extraction:
                 continue
             aligner = _WordAligner(words)
             for sentence in split_sentences(_clean(box_text)):
+                if BOILERPLATE_RE.search(sentence):
+                    continue
                 bboxes = aligner.bboxes_for(sentence)
                 if not bboxes:
                     continue
