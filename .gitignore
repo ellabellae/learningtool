@@ -1,0 +1,17 @@
+# Copyrighted source PDFs and page images never enter the repo.
+data/papers/*/source.pdf
+data/papers/*/crops/
+# Rendered lessons embed the crops as base64 and run to several MB.
+data/papers/*/lessons/*/lesson.html
+# Your own profile is personal; the example is committed.
+data/profile.yaml
+
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+.DS_Store
+node_modules/
