@@ -1,0 +1,15 @@
+{
+  "id": "before-after-groups",
+  "name": "Before and after, two groups",
+  "description": "A treated group and a control group each measured before and after. Shows how the difference between groups depends on the treatment effect and any drift in the controls. For studies that compared two groups at two time points; never implies a dose-response curve.",
+  "mechanism_keywords": ["control group", "sham", "placebo", "pre", "post", "before", "after", "compared with"],
+  "params": {
+    "treatment_effect": {"lo": -0.2, "hi": 0.6, "default": 0.25, "unit": "", "label": "Change in the treated group"},
+    "control_drift": {"lo": -0.2, "hi": 0.3, "default": 0.03, "unit": "", "label": "Change in the control group"}
+  },
+  "defaults": {"treatment_effect": 0.25, "control_drift": 0.03},
+  "units": {"treatment_effect": "", "control_drift": ""},
+  "outputs": ["treated_after", "control_after", "difference"],
+  "output_labels": {"treated_after": "treated group, after", "control_after": "control group, after", "difference": "difference between groups"},
+  "axes": {"x": "group", "y": "score (normalized)"}
+}
