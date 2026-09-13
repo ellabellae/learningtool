@@ -147,6 +147,67 @@ def cmd_spotcheck(args: argparse.Namespace) -> int:
     return 0
 
 
+def _lesson_dir(paper_id: str, profile_name: str) -> Path:
+    return PAPERS_DIR / paper_id / "lessons" / profile_name
+
+
+def cmd_render(args: argparse.Namespace) -> int:
+    import json
+
+    from .render import ChecksMismatch, RenderInputs, render
+    from .schema import Checks, Lesson, Span
+
+    profile = load_profile(args.profile)
+    paper_id = resolve_paper_id(args.paper_id)
+    paper_dir = PAPERS_DIR / paper_id
+    ldir = _lesson_dir(paper_id, profile.name)
+    lesson_path, checks_path, audit_path = ldir / "lesson.json", ldir / "checks.json", ldir / "audit.json"
+    if not lesson_path.exists():
+        print(f"no lesson for profile {profile.name!r}; run: learn generate {paper_id[:12]}", file=sys.stderr)
+        return 1
+    if not (paper_dir / "source.pdf").exists():
+        print(f"source.pdf missing for {paper_id[:12]}; re-run: learn extract <pdf>", file=sys.stderr)
+        return 1
+    lesson = Lesson.model_validate(json.loads(lesson_path.read_text(encoding="utf-8")))
+    checks = Checks.model_validate(json.loads(checks_path.read_text(encoding="utf-8"))) if checks_path.exists() else None
+    spans = {s["id"]: Span.model_validate(s) for s in json.loads((paper_dir / "spans.json").read_text(encoding="utf-8"))}
+    prior = {p.parent.parent.parent.name: p for p in PAPERS_DIR.glob(f"*/lessons/{profile.name}/lesson.html")}
+    try:
+        html = render(
+            RenderInputs(
+                lesson=lesson, checks=checks, profile=profile, spans=spans, pdf=paper_dir / "source.pdf",
+                audit_skipped=not audit_path.exists(), prior_lesson_paths=prior,
+            )
+        )
+    except ChecksMismatch as exc:
+        print(f"render   refused: {exc}", file=sys.stderr)
+        return 1
+    out = ldir / "lesson.html"
+    out.write_text(html, encoding="utf-8")
+    print(f"render   {out} ({len(html) // 1024} KB)")
+    return 0
+
+
+def cmd_open(args: argparse.Namespace) -> int:
+    import webbrowser
+
+    profile = load_profile(args.profile)
+    paper_id = resolve_paper_id(args.paper_id)
+    out = _lesson_dir(paper_id, profile.name) / "lesson.html"
+    if not out.exists():
+        print(f"no rendered lesson; run: learn render {paper_id[:12]}", file=sys.stderr)
+        return 1
+    try:
+        from .memory import mark_read
+
+        mark_read(paper_id)
+    except ImportError:
+        pass  # feat/memory
+    webbrowser.open(out.resolve().as_uri())
+    print(f"open     {out}")
+    return 0
+
+
 def cmd_not_yet(args: argparse.Namespace) -> int:
     print(f"`learn {args.command}` is not built yet; it arrives in {NOT_YET[args.command]}.", file=sys.stderr)
     return 2
@@ -165,11 +226,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("extract", help="PDF -> spans.json"); p.add_argument("pdf"); p.add_argument("--force", action="store_true"); p.set_defaults(func=cmd_extract)
     p = sub.add_parser("spotcheck", help="draw every span's boxes on its page (PNG per page)"); p.add_argument("paper_id"); p.set_defaults(func=cmd_spotcheck)
+    built = {"render": cmd_render, "open": cmd_open}
     for name in ("generate", "audit", "check", "repair", "render", "open"):
         p = with_profile(sub.add_parser(name)); p.add_argument("paper_id")
         if name == "generate":
             p.add_argument("--failures", help="checks.json from a failed check (repair input)")
-        p.set_defaults(func=cmd_not_yet)
+        p.set_defaults(func=built.get(name, cmd_not_yet))
     p = with_profile(sub.add_parser("lesson", help="extract -> generate -> audit -> check -> render -> open")); p.add_argument("pdf"); p.set_defaults(func=cmd_not_yet)
     return parser
 
