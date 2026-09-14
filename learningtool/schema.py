@@ -301,12 +301,17 @@ class WidgetAudit(Strict):
     reason: str = ""
 
 
-class AuditFlags(Strict):
-    schema_version: int = SCHEMA_VERSION
-    lesson_sha256: str
+class AuditDraft(Strict):
+    """What the audit call emits: flags only. It can never clear a structural failure."""
+
     claims: list[ClaimAudit] = Field(default_factory=list)
     scenes: list[SceneAudit] = Field(default_factory=list)
     widgets: list[WidgetAudit] = Field(default_factory=list)
+
+
+class AuditFlags(AuditDraft):
+    schema_version: int = SCHEMA_VERSION
+    lesson_sha256: str
 
 
 class ClaimCheck(Strict):
