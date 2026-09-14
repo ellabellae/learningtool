@@ -64,12 +64,35 @@ class LLM(Protocol):
     def structured(self, system: str, blocks: list[Block], schema: dict, *, progress=None) -> Reply: ...
 
 
+_SCHEMA_NOISE = {"title", "description", "default", "examples", "pattern", "minLength", "maxLength", "minItems", "maxItems", "minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum", "format"}
+
+
+def lean_schema(schema):
+    """Strip everything the API's grammar compiler does not need. Keeps the shape
+    (type, properties, required, additionalProperties, enum, items, anyOf, $defs,
+    $ref); drops titles, descriptions, and value constraints, which inflate the
+    compiled grammar until the API refuses it. Pydantic re-checks the constraints
+    on our side anyway."""
+    if isinstance(schema, dict):
+        return {k: lean_schema(v) for k, v in schema.items() if k not in _SCHEMA_NOISE}
+    if isinstance(schema, list):
+        return [lean_schema(v) for v in schema]
+    return schema
+
+
+PROMPT_GUIDED_SUFFIX = (
+    "\n\nReply with one JSON object and nothing else: no prose before or after, no code fences. "
+    "It must match this JSON schema exactly (every required key present, no extra keys):\n"
+)
+
+
 class AnthropicLLM:
     def __init__(self, model: str = DEFAULT_MODEL, client=None):
         import anthropic
 
         self.model = model
         self.client = client or anthropic.Anthropic(max_retries=MAX_RETRIES, timeout=TIMEOUT_SECONDS)
+        self.last_mode = ""
 
     def structured(self, system: str, blocks: list[Block], schema: dict, *, progress=None) -> Reply:
         import anthropic
@@ -80,20 +103,20 @@ class AnthropicLLM:
             if b.cache:
                 item["cache_control"] = {"type": "ephemeral"}
             content.append(item)
+        lean = lean_schema(schema)
         t0 = time.monotonic()
         try:
-            with self.client.messages.stream(
-                model=self.model,
-                max_tokens=MAX_OUTPUT_TOKENS,
-                system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
-                messages=[{"role": "user", "content": content}],
-                thinking={"type": "adaptive"},
-                output_config={"effort": EFFORT, "format": {"type": "json_schema", "schema": schema}},
-            ) as stream:
-                for event in stream:
-                    if progress and event.type in ("content_block_delta", "message_start"):
-                        progress(time.monotonic() - t0)
-                final = stream.get_final_message()
+            try:
+                final = self._call(system, content, lean, progress, t0)
+                self.last_mode = "grammar"
+            except anthropic.BadRequestError as exc:
+                if "grammar" not in str(exc).lower():
+                    raise
+                # The API refused to compile the schema. Ask for JSON in the prompt instead;
+                # parse_json + Pydantic validate the reply on our side.
+                guided = content + [{"type": "text", "text": PROMPT_GUIDED_SUFFIX + json.dumps(lean)}]
+                final = self._call(system, guided, None, progress, t0)
+                self.last_mode = "prompt-guided"
         except anthropic.AuthenticationError as exc:
             raise LLMError("the API rejected the key (AuthenticationError). Check ANTHROPIC_API_KEY, then re-run.") from exc
         except anthropic.RateLimitError as exc:
@@ -104,7 +127,7 @@ class AnthropicLLM:
             raise LLMError(f"API error {exc.status_code} after retries: {exc.message}. Re-run.") from exc
         text = "".join(b.text for b in final.content if b.type == "text")
         usage = final.usage
-        reply = Reply(
+        return Reply(
             text=text, stop_reason=final.stop_reason or "", model=final.model,
             input_tokens=usage.input_tokens, output_tokens=usage.output_tokens,
             cache_read_tokens=getattr(usage, "cache_read_input_tokens", 0) or 0,
@@ -112,7 +135,23 @@ class AnthropicLLM:
             stop_details=(final.stop_details.model_dump() if getattr(final, "stop_details", None) else None),
             elapsed=time.monotonic() - t0,
         )
-        return reply
+
+    def _call(self, system: str, content: list[dict], schema: dict | None, progress, t0: float):
+        output_config: dict = {"effort": EFFORT}
+        if schema is not None:
+            output_config["format"] = {"type": "json_schema", "schema": schema}
+        with self.client.messages.stream(
+            model=self.model,
+            max_tokens=MAX_OUTPUT_TOKENS,
+            system=[{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
+            messages=[{"role": "user", "content": content}],
+            thinking={"type": "adaptive"},
+            output_config=output_config,
+        ) as stream:
+            for event in stream:
+                if progress and event.type in ("content_block_delta", "message_start"):
+                    progress(time.monotonic() - t0)
+            return stream.get_final_message()
 
 
 class FakeLLM:
@@ -164,8 +203,17 @@ def check_result(reply: Reply, what: str) -> None:
 
 def parse_json(reply: Reply, what: str) -> dict:
     check_result(reply, what)
+    text = reply.text.strip()
+    # Prompt-guided replies sometimes arrive fenced or with a sentence around them.
+    if text.startswith("```"):
+        text = text.split("\n", 1)[1] if "\n" in text else text[3:]
+        text = text.rsplit("```", 1)[0]
+    if not text.startswith("{"):
+        a, b = text.find("{"), text.rfind("}")
+        if a != -1 and b > a:
+            text = text[a : b + 1]
     try:
-        return json.loads(reply.text)
+        return json.loads(text)
     except json.JSONDecodeError as exc:
         raise LLMError(f"{what}: the model's reply was not valid JSON ({exc.msg} at char {exc.pos}). Re-run.") from exc
 
