@@ -26,14 +26,8 @@ DATA_DIR = Path("data")
 PAPERS_DIR = DATA_DIR / "papers"
 
 NOT_YET = {
-    "extract": "feat/extract",
-    "generate": "feat/generate",
     "audit": "feat/audit-check",
     "check": "feat/audit-check",
-    "repair": "feat/generate",
-    "render": "feat/player",
-    "open": "feat/player",
-    "lesson": "feat/generate",
 }
 
 
@@ -208,6 +202,100 @@ def cmd_open(args: argparse.Namespace) -> int:
     return 0
 
 
+def _load_paper(paper_id: str):
+    import json
+
+    from .schema import PaperMeta, Span
+
+    paper_dir = PAPERS_DIR / paper_id
+    spans = [Span.model_validate(s) for s in json.loads((paper_dir / "spans.json").read_text(encoding="utf-8"))]
+    meta = PaperMeta.model_validate(json.loads((paper_dir / "paper_meta.json").read_text(encoding="utf-8")))
+    return paper_dir, spans, meta
+
+
+def cmd_generate(args: argparse.Namespace) -> int:
+    from . import memory
+    from .generate import generate, usage_line, write_json
+    from .llm import LLMError, get_llm, ticker
+    from widgets.registry import load_registry
+
+    profile = load_profile(args.profile)
+    paper_id = resolve_paper_id(args.paper_id)
+    paper_dir, spans, meta = _load_paper(paper_id)
+    print(f"generate {meta.title}")
+    print("         safe to Ctrl-C; nothing is written until the reply parses")
+    try:
+        res = generate(get_llm(), spans=spans, profile=profile, paper_id=paper_id, paper_meta=meta, registry=load_registry(), records=memory.load_records(), progress=ticker("generate"))
+    except LLMError as exc:
+        print(f"\ngenerate failed: {exc}", file=sys.stderr)
+        return 1
+    print("\r" + " " * 60 + "\r", end="", file=sys.stderr)
+    out = _lesson_dir(paper_id, profile.name) / "lesson.json"
+    write_json(out, res.lesson)
+    n_find = sum(1 for s in res.lesson.scenes for c in s.claims if c.kind == "finding")
+    print(f"         {len(res.lesson.scenes)} scenes · {n_find} findings · {len(res.lesson.widgets)} widget(s) · {usage_line(res.reply)}")
+    print(f"         wrote {out}")
+    return 0
+
+
+def cmd_repair(args: argparse.Namespace) -> int:
+    import json
+
+    from .generate import usage_line, write_json
+    from .llm import LLMError, get_llm, ticker
+    from .repair import repair
+    from .schema import Checks, Failure, Lesson
+    from widgets.registry import load_registry
+
+    profile = load_profile(args.profile)
+    paper_id = resolve_paper_id(args.paper_id)
+    paper_dir, spans, _ = _load_paper(paper_id)
+    ldir = _lesson_dir(paper_id, profile.name)
+    lesson_path, checks_path = ldir / "lesson.json", ldir / "checks.json"
+    if not lesson_path.exists() or not checks_path.exists():
+        print("repair needs lesson.json and checks.json; run: learn generate then learn check", file=sys.stderr)
+        return 1
+    lesson = Lesson.model_validate(json.loads(lesson_path.read_text(encoding="utf-8")))
+    checks = Checks.model_validate(json.loads(checks_path.read_text(encoding="utf-8")))
+    failures = [Failure(kind="claim", id=c.claim_id, reason=c.reason or "failed") for c in checks.claims if c.status == "failed"]
+    failures += [Failure(kind="widget", id=w.widget_id, reason=w.reason or "failed") for w in checks.widgets if not w.ok]
+    failures += [Failure(kind="scene", id=s.scene_id, reason=", ".join(s.flags)) for s in checks.scenes if s.flags and not (s.widget_removed and len(s.flags) == 1)]
+    if not failures:
+        print("repair   nothing to repair")
+        return 0
+    print(f"repair   {len(failures)} failure(s)")
+    try:
+        merged, reply = repair(get_llm(), lesson=lesson, failures=failures, spans=spans, registry=load_registry(), progress=ticker("repair"))
+    except LLMError as exc:
+        print(f"\nrepair failed: {exc}", file=sys.stderr)
+        return 1
+    print("\r" + " " * 60 + "\r", end="", file=sys.stderr)
+    write_json(lesson_path, merged)
+    print(f"         merged · {usage_line(reply)} · re-run: learn check {paper_id[:12]}")
+    return 0
+
+
+def cmd_lesson(args: argparse.Namespace) -> int:
+    """extract -> generate -> [audit] -> [check] -> [repair] -> render -> open. Steps not yet built are skipped and named."""
+    ns = argparse.Namespace
+    rc = cmd_extract(ns(pdf=args.pdf, force=False))
+    if rc != 0:
+        return rc
+    from .extract import sha256_of
+
+    paper_id = sha256_of(Path(args.pdf))
+    rc = cmd_generate(ns(paper_id=paper_id, profile=args.profile, failures=None))
+    if rc != 0:
+        return rc
+    skipped = [name for name in ("audit", "check") if name in NOT_YET]
+    if skipped:
+        print(f"skipped  {', '.join(skipped)} (not built yet: {', '.join(NOT_YET[n] for n in skipped)}); the lesson renders as unchecked")
+    rc = cmd_render(ns(paper_id=paper_id, profile=args.profile))
+    if rc != 0:
+        return rc
+    return cmd_open(ns(paper_id=paper_id, profile=args.profile))
+
+
 def cmd_not_yet(args: argparse.Namespace) -> int:
     print(f"`learn {args.command}` is not built yet; it arrives in {NOT_YET[args.command]}.", file=sys.stderr)
     return 2
@@ -226,13 +314,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("extract", help="PDF -> spans.json"); p.add_argument("pdf"); p.add_argument("--force", action="store_true"); p.set_defaults(func=cmd_extract)
     p = sub.add_parser("spotcheck", help="draw every span's boxes on its page (PNG per page)"); p.add_argument("paper_id"); p.set_defaults(func=cmd_spotcheck)
-    built = {"render": cmd_render, "open": cmd_open}
+    built = {"render": cmd_render, "open": cmd_open, "generate": cmd_generate, "repair": cmd_repair}
     for name in ("generate", "audit", "check", "repair", "render", "open"):
         p = with_profile(sub.add_parser(name)); p.add_argument("paper_id")
         if name == "generate":
             p.add_argument("--failures", help="checks.json from a failed check (repair input)")
         p.set_defaults(func=built.get(name, cmd_not_yet))
-    p = with_profile(sub.add_parser("lesson", help="extract -> generate -> audit -> check -> render -> open")); p.add_argument("pdf"); p.set_defaults(func=cmd_not_yet)
+    p = with_profile(sub.add_parser("lesson", help="extract -> generate -> audit -> check -> render -> open")); p.add_argument("pdf"); p.set_defaults(func=cmd_lesson)
     return parser
 
 
