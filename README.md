@@ -22,6 +22,12 @@ pip install -e ".[dev]"
 learn survey            # writes data/profile.yaml
 ```
 
+## Model settings
+
+- `ANTHROPIC_API_KEY` is read by the SDK. Default model is `claude-opus-5`; override with `LEARN_MODEL`.
+- `LEARN_EFFORT` (default `high`) tunes reasoning depth and cost.
+- `LEARN_LLM_FAKE=path/to/replies.json` replays canned replies instead of calling the API (tests, demos).
+
 ## Use
 
 ```bash
