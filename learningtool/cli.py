@@ -25,10 +25,7 @@ from .schema import Profile
 DATA_DIR = Path("data")
 PAPERS_DIR = DATA_DIR / "papers"
 
-NOT_YET = {
-    "audit": "feat/audit-check",
-    "check": "feat/audit-check",
-}
+NOT_YET: dict[str, str] = {}  # every command is built; kept so a future subcommand can name its branch
 
 
 def resolve_paper_id(prefix: str, papers_dir: Path = PAPERS_DIR) -> str:
@@ -275,8 +272,77 @@ def cmd_repair(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_audit(args: argparse.Namespace) -> int:
+    import json
+
+    from .audit import audit, summarize
+    from .generate import usage_line, write_json
+    from .llm import LLMError, get_llm, ticker
+    from .schema import Lesson
+    from widgets.registry import load_registry
+
+    profile = load_profile(args.profile)
+    paper_id = resolve_paper_id(args.paper_id)
+    _, spans, _ = _load_paper(paper_id)
+    ldir = _lesson_dir(paper_id, profile.name)
+    lesson_path = ldir / "lesson.json"
+    if not lesson_path.exists():
+        print(f"no lesson for profile {profile.name!r}; run: learn generate {paper_id[:12]}", file=sys.stderr)
+        return 1
+    lesson = Lesson.model_validate(json.loads(lesson_path.read_text(encoding="utf-8")))
+    try:
+        flags, reply = audit(get_llm(), lesson=lesson, spans={s.id: s for s in spans}, registry=load_registry(), progress=ticker("audit"))
+    except LLMError as exc:
+        print(f"\naudit failed: {exc}", file=sys.stderr)
+        return 1
+    print("\r" + " " * 60 + "\r", end="", file=sys.stderr)
+    write_json(ldir / "audit.json", flags)
+    print(f"audit    {summarize(flags)} · {usage_line(reply)}")
+    return 0
+
+
+def cmd_check(args: argparse.Namespace) -> int:
+    import json
+
+    from . import memory
+    from .check import run_checks, summarize
+    from .generate import write_json
+    from .schema import AuditFlags, Lesson
+    from widgets.registry import NodeMissing, load_registry
+
+    profile = load_profile(args.profile)
+    paper_id = resolve_paper_id(args.paper_id)
+    _, spans, meta = _load_paper(paper_id)
+    ldir = _lesson_dir(paper_id, profile.name)
+    lesson_path, audit_path = ldir / "lesson.json", ldir / "audit.json"
+    if not lesson_path.exists():
+        print(f"no lesson for profile {profile.name!r}; run: learn generate {paper_id[:12]}", file=sys.stderr)
+        return 1
+    lesson = Lesson.model_validate(json.loads(lesson_path.read_text(encoding="utf-8")))
+    flags = AuditFlags.model_validate(json.loads(audit_path.read_text(encoding="utf-8"))) if audit_path.exists() else None
+    if flags is not None and flags.lesson_sha256 != lesson.sha256():
+        print("check    audit.json is for an older lesson; ignoring it (re-run: learn audit)")
+        flags = None
+    records = memory.load_records()
+    try:
+        checks = run_checks(lesson, {s.id: s for s in spans}, load_registry(), audit=flags, records=records)
+    except NodeMissing as exc:
+        print(f"check failed: {exc}", file=sys.stderr)
+        return 1
+    write_json(ldir / "checks.json", checks)
+    passed = checks.passed()
+    print(f"check    {summarize(checks)} · {'PASS' if passed else 'FAIL'}")
+    if passed:
+        memory.save_records(memory.upsert_paper(records, paper_id, meta.title, lesson.concepts))
+        print(f"         memory: {len(lesson.concepts)} concept record(s) for this paper")
+    return 0 if passed else 1
+
+
 def cmd_lesson(args: argparse.Namespace) -> int:
-    """extract -> generate -> [audit] -> [check] -> [repair] -> render -> open. Steps not yet built are skipped and named."""
+    """extract -> generate -> audit -> check -> (repair -> audit -> check, once) -> render -> open.
+
+    Render and open always run; the exit code is the last check's. An audit that
+    fails to run is skipped with a warning, not fatal."""
     ns = argparse.Namespace
     rc = cmd_extract(ns(pdf=args.pdf, force=False))
     if rc != 0:
@@ -287,13 +353,21 @@ def cmd_lesson(args: argparse.Namespace) -> int:
     rc = cmd_generate(ns(paper_id=paper_id, profile=args.profile, failures=None))
     if rc != 0:
         return rc
-    skipped = [name for name in ("audit", "check") if name in NOT_YET]
-    if skipped:
-        print(f"skipped  {', '.join(skipped)} (not built yet: {', '.join(NOT_YET[n] for n in skipped)}); the lesson renders as unchecked")
+    if cmd_audit(ns(paper_id=paper_id, profile=args.profile)) != 0:
+        print("audit    skipped; the lesson will say so")
+    check_rc = cmd_check(ns(paper_id=paper_id, profile=args.profile))
+    if check_rc != 0:
+        if cmd_repair(ns(paper_id=paper_id, profile=args.profile)) == 0:
+            if cmd_audit(ns(paper_id=paper_id, profile=args.profile)) != 0:
+                print("audit    skipped after repair")
+            check_rc = cmd_check(ns(paper_id=paper_id, profile=args.profile))
+        if check_rc != 0:
+            print("check    still failing after one repair; rendering with flags")
     rc = cmd_render(ns(paper_id=paper_id, profile=args.profile))
     if rc != 0:
         return rc
-    return cmd_open(ns(paper_id=paper_id, profile=args.profile))
+    cmd_open(ns(paper_id=paper_id, profile=args.profile))
+    return check_rc
 
 
 def cmd_not_yet(args: argparse.Namespace) -> int:
@@ -314,7 +388,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("extract", help="PDF -> spans.json"); p.add_argument("pdf"); p.add_argument("--force", action="store_true"); p.set_defaults(func=cmd_extract)
     p = sub.add_parser("spotcheck", help="draw every span's boxes on its page (PNG per page)"); p.add_argument("paper_id"); p.set_defaults(func=cmd_spotcheck)
-    built = {"render": cmd_render, "open": cmd_open, "generate": cmd_generate, "repair": cmd_repair}
+    built = {"render": cmd_render, "open": cmd_open, "generate": cmd_generate, "repair": cmd_repair, "audit": cmd_audit, "check": cmd_check}
     for name in ("generate", "audit", "check", "repair", "render", "open"):
         p = with_profile(sub.add_parser(name)); p.add_argument("paper_id")
         if name == "generate":

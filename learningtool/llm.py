@@ -134,13 +134,20 @@ class FakeLLM:
         return Reply(text=r, stop_reason="end_turn", model="fake")
 
 
+_FAKE: FakeLLM | None = None
+
+
 def get_llm() -> LLM:
-    """The real client, or a FakeLLM when LEARN_LLM_FAKE names a JSON file of replies."""
+    """The real client, or a FakeLLM when LEARN_LLM_FAKE names a JSON file of replies.
+    The fake is created once per process so a chain (generate, audit, repair) consumes replies in order."""
+    global _FAKE
     fake = os.environ.get("LEARN_LLM_FAKE")
     if fake:
-        data = json.loads(Path(fake).read_text(encoding="utf-8"))
-        replies = data if isinstance(data, list) else [data]
-        return FakeLLM([Reply(**r) if isinstance(r, dict) and "stop_reason" in r else r for r in replies])
+        if _FAKE is None:
+            data = json.loads(Path(fake).read_text(encoding="utf-8"))
+            replies = data if isinstance(data, list) else [data]
+            _FAKE = FakeLLM([Reply(**r) if isinstance(r, dict) and "stop_reason" in r else r for r in replies])
+        return _FAKE
     return AnthropicLLM()
 
 
