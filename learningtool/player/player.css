@@ -23,7 +23,7 @@ h1,h3{font-weight:400}
 .arc li{position:relative;flex:1;min-width:72px}
 @media (max-width:1399px){.ptitle{display:none}}
 /* Laptop widths: dots may shrink, only nearby labels show, and the counter never sits on the arc. */
-@media (max-width:1279px){.arc{overflow:visible}.arc li{min-width:0}.arc li:not(.cur):not(:first-child):not(:last-child) span{visibility:hidden}.arc li.cur span{white-space:nowrap}}
+@media (max-width:1279px){.arc{overflow:visible}.arc li{min-width:0}.arc li:not(.cur):not(:first-child):not(:last-child) span{display:none}.arc li.cur span{white-space:nowrap}}
 .counter{flex-shrink:0}
 .arc li::before{content:"";position:absolute;top:8px;left:50%;width:100%;height:1px;background:var(--hairline)}
 .arc li:last-child::before{display:none}
