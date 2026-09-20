@@ -59,6 +59,8 @@ class RenderInputs:
     pdf: Path | None = None
     audit_skipped: bool = False
     prior_lesson_paths: dict[str, Path] | None = None  # paper_id -> lesson.html for tie-back links
+    share: bool = False  # public version: no page images, no local links, attribution footer
+    source_url: str | None = None  # link to the original paper (DOI or publisher page)
 
 
 def render(inputs: RenderInputs) -> str:
@@ -87,7 +89,7 @@ def build_view(inputs: RenderInputs) -> dict:
     for link in lesson.prior_links:
         links_by_scene.setdefault(link.scene_id, []).append(link)
     concept_by_scene = {c.scene_id: c for c in lesson.concepts}
-    crops = _crops(inputs, lesson, spans)
+    crops = {} if inputs.share else _crops(inputs, lesson, spans)
 
     scenes = []
     for s in lesson.scenes:
@@ -183,6 +185,7 @@ def build_view(inputs: RenderInputs) -> dict:
         if s.role == "prereq":
             c = concept_by_scene.get(s.id)
             label = c.name if c else _first_words(s.headline, 3)
+            label = _truncate(label, 24)  # long concept names wrapped the arc to six lines
 
         scenes.append(
             {
@@ -232,6 +235,8 @@ def build_view(inputs: RenderInputs) -> dict:
         "profile_name": profile.name,
         "paper_id": lesson.paper_id,
         "audit_skipped": inputs.audit_skipped,
+        "share": inputs.share,
+        "source_url": inputs.source_url,
         "checks_present": checks is not None,
         "close_finding": finding_for_close,
         "templates_js": _templates_bundle(),
@@ -309,7 +314,24 @@ def _citation(meta) -> str:
     return ". ".join(p.rstrip(".") for p in parts if p) + "."
 
 
+DOI_RE = re.compile(r"\b(10\.\d{4,9}/[^\s\"<>;,]+)")
+
+
+def detect_source_url(meta, spans: list[Span]) -> str | None:
+    """A DOI link if the paper's metadata or first sentences carry one. Never guesses a URL."""
+    haystack = " ".join([meta.venue or "", meta.title] + [s.text for s in spans[:60]])
+    m = DOI_RE.search(haystack)
+    return f"https://doi.org/{m.group(1).rstrip('.)')}" if m else None
+
+
+def slugify(title: str, max_len: int = 60) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
+    return slug[:max_len].rstrip("-") or "lesson"
+
+
 def _tie_back_href(inputs: RenderInputs, paper_id: str) -> str | None:
+    if inputs.share:
+        return None  # local file links mean nothing on a public page
     paths = inputs.prior_lesson_paths or {}
     p = paths.get(paper_id)
     return p.resolve().as_uri() if p and Path(p).exists() else None

@@ -35,6 +35,8 @@
     <h1 class="hook">{{ hook }}</h1>
     <p class="pmeta"><b>{{ meta.title }}</b><br>
       {% if meta.authors %}{{ meta.authors | join(', ') }} · {% endif %}{% if meta.venue %}{{ meta.venue }} · {% endif %}{% if meta.year %}{{ meta.year }} · {% endif %}{{ meta.pages }} page{{ 's' if meta.pages != 1 else '' }}</p>
+    {% if source_url %}<p class="dl"><a href="{{ source_url }}" rel="noopener">Read the original paper</a></p>{% endif %}
+    {% if share %}<p class="share-note">An unofficial lesson generated from the paper above. Every quote is the paper's own sentence with its page number. Page images are omitted in this shared version because the source paper is copyrighted; the full tool shows the highlighted page beside every quote.</p>{% endif %}
     <p class="dl">Depth</p>
     <div class="dial" role="radiogroup" aria-label="Depth">
       {% for d in ['brief', 'standard', 'deep'] %}
@@ -106,7 +108,7 @@
         <li data-claim="{{ c.id }}"{% if c.span_id %} data-span="{{ c.span_id }}"{% endif %}>
           <span>{{ c.text }}</span> <span class="chip">{{ c.chip }}</span>
           {% if c.quote %}<blockquote class="quote"><p>“{{ c.quote }}”</p><footer>p. {{ c.page }} · shown exactly as extracted</footer></blockquote>
-          {% if c.crop %}<figure class="crop"><img src="{{ c.crop }}" alt="Page {{ c.page }} with the cited sentence highlighted"><figcaption><button type="button" class="linkish zoom">zoom</button></figcaption></figure>{% else %}<p class="dl">Page crop unavailable (source PDF not present at render time).</p>{% endif %}
+          {% if c.crop %}<figure class="crop"><img src="{{ c.crop }}" alt="Page {{ c.page }} with the cited sentence highlighted"><figcaption><button type="button" class="linkish zoom">zoom</button></figcaption></figure>{% elif share %}<p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.{% if source_url %} <a href="{{ source_url }}" rel="noopener">Original paper</a>{% endif %}</p>{% else %}<p class="dl">Page crop unavailable (source PDF not present at render time).</p>{% endif %}
           {% elif c.citation %}<p class="dl">Source: {{ c.citation }} (outside the paper; not checked in v1)</p>{% endif %}
         </li>
         {% endfor %}
@@ -135,7 +137,8 @@
       <ul class="concepts">{% for c in concepts %}<li><b>{{ c.name }}</b> — {{ c.one_line }}</li>{% endfor %}</ul>
       {% endif %}
       <h3>The paper</h3>
-      <p class="cite">{{ citation }}</p>
+      <p class="cite">{{ citation }}{% if source_url %} <a href="{{ source_url }}" rel="noopener">Original paper</a>{% endif %}</p>
+      {% if share %}<p class="share-note">Made with learningtool. Not affiliated with or endorsed by the authors or publisher. Quotes are the paper's words; the interactive models are illustrative, not the study's measurements.</p>{% endif %}
     </div>
     <p><button type="button" class="btn" id="restart">Back to start</button></p>
   </section>
