@@ -30,6 +30,9 @@ h1,h3{font-weight:400}
 .arc ol{list-style:none;margin:0;padding:0;display:flex}
 .arc li{position:relative;flex:1;min-width:72px}
 @media (max-width:1399px){.ptitle{display:none}}
+/* Laptop widths: dots may shrink, only nearby labels show, and the counter never sits on the arc. */
+@media (max-width:1279px){.arc{overflow:hidden}.arc li{min-width:0}.arc li:not(.cur):not(.near) span{visibility:hidden}}
+.counter{flex-shrink:0}
 .arc li::before{content:"";position:absolute;top:8px;left:50%;width:100%;height:1px;background:var(--hairline)}
 .arc li:last-child::before{display:none}
 .arc button{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;width:100%;background:none;border:0;padding:0;font:inherit;color:var(--slate);cursor:pointer;min-height:44px}
@@ -683,8 +686,6 @@ If AUC were the right summary, both models should behave about the same in both 
       <p class="locked-note" hidden>Locked in. Next shows what the paper found.</p>
     
 
-    
-    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-pred-1">“Two hypothetical models with approximately similar behaviour with respect to a frequently…” · p. 12</button> <span class="chip">Cited</span></p>
     
 
     
@@ -1353,7 +1354,8 @@ return {model, curve, draw, manifest};
     if (quote) requestAnimationFrame(() => quote.classList.add("in"));
     verdict.hidden = false;
     if (p && p.choice !== null && Number.isFinite(answerIndex)) {
-      verdict.textContent = p.choice === answerIndex ? "That's what they found." : `Close. The paper found: ${note || headingOf(scene).toLowerCase()}.`;
+      const found = (note || headingOf(scene)).replace(/[.!?\s]+$/, "");
+      verdict.textContent = p.choice === answerIndex ? "That's what they found." : `Close. The paper found: ${found}.`;
     } else if (note) {
       verdict.textContent = note;
     } else { verdict.hidden = true; }
@@ -1451,6 +1453,12 @@ return {model, curve, draw, manifest};
     if (e.key === "ArrowLeft") { e.preventDefault(); step(-1); }
   });
   function say(t) { announce.textContent = ""; setTimeout(() => { announce.textContent = t; }, 30); }
+
+  window.addEventListener("hashchange", () => {
+    const i = Number((location.hash.match(/^#s(\d+)$/) || [])[1]);
+    if (Number.isFinite(i) && i !== state.idx && scenes[i] && isVisible(scenes[i])) show(i);
+  });
+  window.addEventListener("resize", updateChrome);
 
   // ---- boot -------------------------------------------------------------------
   scenes.forEach((s) => { const sec = s.dataset.seconds; if (sec === undefined) s.dataset.seconds = "0"; });
