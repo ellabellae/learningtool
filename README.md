@@ -1,10 +1,8 @@
 # learningtool
 
-**Research papers, told as lessons you can play through.**
+**Research papers: making academic fun!**
 
-Drop in a research-paper PDF. Get back a story-shaped interactive lesson: the concepts the paper
-assumes, the problem, what they tried, *your prediction*, what they found, and what changed. Every
-finding points at the paper's own sentence, and a checker refuses claims the paper doesn't support.
+I built this tool because I love reading and story telling, and I also love reading scientific papers, but I felt there was a big gap in the entertainment aspect. Academic papers are usually very dense and hard to digest for someone that might not be a subject-matter-expert in the content. As someone that likes to get smart on complicated things fast, I want to be able to understand the content from academic papers without spending hours deciphering the meaning. I used G-stack to build a tool that reshapes a research paper into a story-like, interactive lessons: the concepts the paper assumes, the problem, what they tried, what they found and what changed. Every finding points at the paper's own sentence so it stays rooted in the facts. This is one of my attempts to make learning more fun and accessible :) 
 
 ### [▶ Live demo: two real lessons](https://ellabellae.github.io/learningtool/)
 
