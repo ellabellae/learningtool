@@ -150,7 +150,8 @@
     if (quote) requestAnimationFrame(() => quote.classList.add("in"));
     verdict.hidden = false;
     if (p && p.choice !== null && Number.isFinite(answerIndex)) {
-      verdict.textContent = p.choice === answerIndex ? "That's what they found." : `Close. The paper found: ${note || headingOf(scene).toLowerCase()}.`;
+      const found = (note || headingOf(scene)).replace(/[.!?\s]+$/, "");
+      verdict.textContent = p.choice === answerIndex ? "That's what they found." : `Close. The paper found: ${found}.`;
     } else if (note) {
       verdict.textContent = note;
     } else { verdict.hidden = true; }
@@ -248,6 +249,12 @@
     if (e.key === "ArrowLeft") { e.preventDefault(); step(-1); }
   });
   function say(t) { announce.textContent = ""; setTimeout(() => { announce.textContent = t; }, 30); }
+
+  window.addEventListener("hashchange", () => {
+    const i = Number((location.hash.match(/^#s(\d+)$/) || [])[1]);
+    if (Number.isFinite(i) && i !== state.idx && scenes[i] && isVisible(scenes[i])) show(i);
+  });
+  window.addEventListener("resize", updateChrome);
 
   // ---- boot -------------------------------------------------------------------
   scenes.forEach((s) => { const sec = s.dataset.seconds; if (sec === undefined) s.dataset.seconds = "0"; });
