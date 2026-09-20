@@ -9,6 +9,8 @@ I built this tool because I love reading and story telling, and I also love read
 A working site, not a video. No install needed. Open a lesson, pick a depth, lock in a prediction, and click any quote to see
 where in the paper it came from.
 
+![A lesson being played: the opening question, a prerequisite rung, a locked-in prediction, the reveal, and the evidence drawer](docs/img/demo.gif)
+
 | Opens with a question, above the paper's real title | You guess the result before the paper answers | The answer arrives as the paper's own sentence |
 |---|---|---|
 | ![Title scene](docs/img/lesson-title.png) | ![Prediction scene](docs/img/lesson-predict.png) | ![Reveal scene](docs/img/lesson-found.png) |
