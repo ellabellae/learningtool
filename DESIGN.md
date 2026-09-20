@@ -24,7 +24,7 @@ motion_ms: { scene: 150, reveal: 150, drawer: 200 }
 # learningtool design system
 
 The Atlas family, chosen deliberately (design decision 10A, 2026-09-13): one visual identity
-across Ella's personal tools. Mode is hybrid: an app surface (calm, dense, utility language)
+across the author's personal tools. Mode is hybrid: an app surface (calm, dense, utility language)
 wrapped around a reading surface (one column, 68ch measure, wayfinding as a feature).
 
 ## Color

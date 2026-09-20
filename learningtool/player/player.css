@@ -50,6 +50,7 @@ main{max-width:var(--measure);margin:0 auto;padding:calc(6*var(--u)) calc(4*var(
 .prose{margin:calc(2*var(--u)) 0 calc(2.5*var(--u))}
 .pmeta{color:var(--slate);margin:0 0 calc(4*var(--u))}.pmeta b{font-weight:500;color:var(--ink)}
 .dl{font-size:16px;color:var(--slate);margin:0 0 var(--u)}
+.share-note{font-size:16px;color:var(--slate);border-left:2px solid var(--hairline);padding-left:calc(1.5*var(--u));margin:0 0 calc(3*var(--u))}
 .strip{background:var(--amber-bg);border-left:4px solid var(--amber);color:#5a4400;padding:calc(1.25*var(--u)) calc(2*var(--u));font-size:16px;margin:0 0 calc(3*var(--u))}
 .src{font-size:16px;color:var(--slate);border-left:2px solid var(--hairline);padding-left:calc(1.5*var(--u));margin:calc(-1*var(--u)) 0 calc(3*var(--u))}
 .src .linkish{text-align:left}

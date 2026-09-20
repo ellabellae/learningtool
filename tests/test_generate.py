@@ -41,9 +41,9 @@ def registry():
 
 def test_generate_post_fills_and_validates(registry):
     llm = FakeLLM([draft_reply()])
-    res = generate(llm, spans=spans(), profile=Profile(name="ella", known_domains=["BME"]), paper_id=PAPER_ID, paper_meta=meta(), registry=registry, records=[])
+    res = generate(llm, spans=spans(), profile=Profile(name="reader", known_domains=["BME"]), paper_id=PAPER_ID, paper_meta=meta(), registry=registry, records=[])
     lesson = res.lesson
-    assert lesson.paper_id == PAPER_ID and lesson.profile_name == "ella"
+    assert lesson.paper_id == PAPER_ID and lesson.profile_name == "reader"
     assert lesson.paper_meta.title.startswith("EEG-based")
     assert lesson.prior_links == []
     assert len(lesson.scenes) == 7
@@ -51,7 +51,7 @@ def test_generate_post_fills_and_validates(registry):
 
 def test_prompt_layout_stable_prefix_first_and_cached(registry):
     llm = FakeLLM([draft_reply()])
-    generate(llm, spans=spans(), profile=Profile(name="ella", known_domains=["running"], known_concepts=["EEG"]), paper_id=PAPER_ID, paper_meta=meta(), registry=registry, records=[])
+    generate(llm, spans=spans(), profile=Profile(name="reader", known_domains=["running"], known_concepts=["EEG"]), paper_id=PAPER_ID, paper_meta=meta(), registry=registry, records=[])
     call = llm.calls[0]
     assert "Honesty rules" in call["system"]
     b0, b1 = call["blocks"]
@@ -69,7 +69,7 @@ def test_memory_slugs_in_prompt_and_prior_links_only_for_read_papers(registry):
         MemoryRecord(concept_id="eeg", name="EEG", one_line="x", paper_id=other, paper_title="Connectome-based neurofeedback", scene_id="s2", created_at="2026-03-01T00:00:00+00:00", read_date=None),
     ]
     llm = FakeLLM([draft_reply()])
-    res = generate(llm, spans=spans(), profile=Profile(name="ella"), paper_id=PAPER_ID, paper_meta=meta(), registry=registry, records=records)
+    res = generate(llm, spans=spans(), profile=Profile(name="reader"), paper_id=PAPER_ID, paper_meta=meta(), registry=registry, records=records)
     assert "- reward-threshold: Reward threshold" in llm.calls[0]["blocks"][0].text
     links = res.lesson.prior_links
     assert [l.concept_id for l in links] == ["reward-threshold"]  # 'eeg' was never opened

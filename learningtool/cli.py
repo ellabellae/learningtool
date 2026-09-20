@@ -179,6 +179,92 @@ def cmd_render(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_share(args: argparse.Namespace) -> int:
+    """Render public versions (no page images, no local links) plus an index page into --out."""
+    import html as htmllib
+    import json
+
+    from .render import ChecksMismatch, RenderInputs, detect_source_url, render, slugify
+    from .schema import Checks, Lesson
+
+    profile = load_profile(args.profile)
+    if args.source_url and len(args.paper_ids) != 1:
+        print("--source-url applies to exactly one paper id", file=sys.stderr)
+        return 1
+    out_dir = Path(args.out)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    entries = []
+    for raw_id in args.paper_ids:
+        paper_id = resolve_paper_id(raw_id)
+        _, spans, meta = _load_paper(paper_id)
+        ldir = _lesson_dir(paper_id, profile.name)
+        lesson_path, checks_path = ldir / "lesson.json", ldir / "checks.json"
+        if not lesson_path.exists():
+            print(f"no lesson for {paper_id[:12]} under profile {profile.name!r}; run: learn lesson <pdf>", file=sys.stderr)
+            return 1
+        lesson = Lesson.model_validate(json.loads(lesson_path.read_text(encoding="utf-8")))
+        checks = Checks.model_validate(json.loads(checks_path.read_text(encoding="utf-8"))) if checks_path.exists() else None
+        if checks is None or not checks.passed():
+            print(f"share    refusing {paper_id[:12]}: only lessons that pass the checker are shared (run: learn check {paper_id[:12]})", file=sys.stderr)
+            return 1
+        source_url = args.source_url or detect_source_url(meta, spans)
+        try:
+            page = render(
+                RenderInputs(
+                    lesson=lesson, checks=checks, profile=profile, spans={s.id: s for s in spans}, pdf=None,
+                    audit_skipped=not (ldir / "audit.json").exists(), share=True, source_url=source_url,
+                )
+            )
+        except ChecksMismatch as exc:
+            print(f"share    refused: {exc}", file=sys.stderr)
+            return 1
+        name = slugify(meta.title) + ".html"
+        (out_dir / name).write_text(page, encoding="utf-8")
+        entries.append({"file": name, "title": meta.title, "hook": lesson.hook_question, "authors": ", ".join(meta.authors), "year": meta.year})
+        print(f"share    {out_dir / name} ({len(page) // 1024} KB){' · ' + source_url if source_url else ' · no source link (pass --source-url)'}")
+    items = "\n".join(
+        f'<li><a href="{htmllib.escape(e["file"])}"><span class="hook">{htmllib.escape(e["hook"])}</span>'
+        f'<span class="meta">{htmllib.escape(e["title"])}{" · " + htmllib.escape(e["authors"]) if e["authors"] else ""}{" · " + str(e["year"]) if e["year"] else ""}</span></a></li>'
+        for e in entries
+    )
+    index = _INDEX_HTML.replace("{{ITEMS}}", items)
+    (out_dir / "index.html").write_text(index, encoding="utf-8")
+    print(f"share    {out_dir / 'index.html'} ({len(entries)} lesson{'s' if len(entries) != 1 else ''})")
+    return 0
+
+
+_INDEX_HTML = """<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>learningtool · paper lessons</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#F7F3EC;--ink:#1F1D1A;--slate:#5B5F66;--terracotta:#B5502F;--hairline:#D9D2C5}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;font-size:18px;line-height:1.55}
+main{max-width:68ch;margin:0 auto;padding:72px 32px 96px}
+.kick{font-size:16px;color:var(--slate);margin:0 0 8px}
+h1{font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:40px;line-height:1.2;margin:0 0 16px}
+p{margin:0 0 24px}.muted{color:var(--slate);font-size:16px}
+ul{list-style:none;padding:0;margin:40px 0}
+li{border-top:1px solid var(--hairline)}li:last-child{border-bottom:1px solid var(--hairline)}
+li a{display:block;padding:24px 0;color:inherit;text-decoration:none}
+li a:hover .hook,li a:focus-visible .hook{color:var(--terracotta)}
+.hook{display:block;font-family:"Instrument Serif",Georgia,serif;font-size:28px;line-height:1.2;margin-bottom:6px}
+.meta{display:block;font-size:16px;color:var(--slate)}
+a{color:var(--ink);text-underline-offset:3px;text-decoration-color:var(--hairline)}
+:focus-visible{outline:2px solid var(--terracotta);outline-offset:2px}
+</style></head><body><main>
+<p class="kick">learningtool</p>
+<h1>Research papers, told as lessons you can play through</h1>
+<p>Each lesson starts with the concepts a paper assumes, then tells the paper as a story: the problem, what they tried, your prediction, what they found, and what changed. Every finding points at the paper's own sentence, and sliders let you poke at the mechanism.</p>
+<ul>
+{{ITEMS}}
+</ul>
+<p class="muted">Unofficial lessons, not affiliated with or endorsed by the papers' authors or publishers. Page images are omitted here because the source papers are copyrighted; the full tool shows the highlighted page beside every quote. Code: <a href="https://github.com/ellabellae/learningtool">github.com/ellabellae/learningtool</a></p>
+</main></body></html>
+"""
+
+
 def cmd_open(args: argparse.Namespace) -> int:
     import webbrowser
 
@@ -388,6 +474,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("extract", help="PDF -> spans.json"); p.add_argument("pdf"); p.add_argument("--force", action="store_true"); p.set_defaults(func=cmd_extract)
     p = sub.add_parser("spotcheck", help="draw every span's boxes on its page (PNG per page)"); p.add_argument("paper_id"); p.set_defaults(func=cmd_spotcheck)
+    p = with_profile(sub.add_parser("share", help="render public versions (no page images) plus an index page"))
+    p.add_argument("paper_ids", nargs="+"); p.add_argument("--out", default="site"); p.add_argument("--source-url", help="link to the original paper (single id only)")
+    p.set_defaults(func=cmd_share)
     built = {"render": cmd_render, "open": cmd_open, "generate": cmd_generate, "repair": cmd_repair, "audit": cmd_audit, "check": cmd_check}
     for name in ("generate", "audit", "check", "repair", "render", "open"):
         p = with_profile(sub.add_parser(name)); p.add_argument("paper_id")

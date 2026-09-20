@@ -8,7 +8,7 @@ Mode: Builder
 
 ## Problem Statement
 
-Ella reads research papers for fun across many fields (EEG neurofeedback and BCI in Zotero today; economics and ML too) and finds them "so hard to digest." She wants to drop in a PDF and get back something that makes her *understand* the paper, not a summary. Her words: "I don't want a summary. I want it to be like a learning lesson. What is ChatGPT? What are LLMs? What was GPT-3.5? I go through understanding these concepts and then can really understand GPT-4 and the main takeaways. Think of it like a story." Breadth over depth: "not getting really smart about one thing, it is taking hard material to understand and making it digestible."
+The author reads research papers for fun across many fields (neuroscience, economics, machine learning) and finds them "so hard to digest." The goal: drop in a PDF and get back something that makes the reader *understand* the paper, not a summary. In the author's words: "I don't want a summary. I want it to be like a learning lesson. What is ChatGPT? What are LLMs? What was GPT-3.5? I go through understanding these concepts and then can really understand GPT-4 and the main takeaways. Think of it like a story." Breadth over depth: "not getting really smart about one thing, it is taking hard material to understand and making it digestible."
 
 ## What Makes This Cool
 
@@ -23,7 +23,7 @@ Ella reads research papers for fun across many fields (EEG neurofeedback and BCI
 - Input is PDF with a text layer. Scanned PDFs are out of scope: `extract` fails fast (mean chars per page < 200) with "no text layer; OCR unsupported" and a non-zero exit.
 - Personal tool first. Shareable by cloning the repo plus a profile file. No accounts. Requires `ANTHROPIC_API_KEY`; the README says so.
 - LLM calls go through the Anthropic Python SDK with structured output (`messages.parse()` with a Pydantic model; the SDK strips unsupported schema features and validates the response). `claude -p` is rejected because it cannot enforce the schema the checker relies on.
-- Files are truth (same pattern as Ella's Atlas tool): profile, spans, lessons, checks, and concept memory are plain JSON/YAML under `data/`. `data/papers/*/source.pdf`, `crops/`, and `lesson.html` (which embeds the crops and runs to several MB) are gitignored, so copyrighted page images never enter the repo; `spans.json`, `lesson.json`, `checks.json` are committed.
+- Files are truth (same pattern as an earlier personal tool): profile, spans, lessons, checks, and concept memory are plain JSON/YAML under `data/`. `data/papers/*/source.pdf`, `crops/`, and `lesson.html` (which embeds the crops and runs to several MB) are gitignored, so copyrighted page images never enter the repo. Since going public (2026-09-20) all of `data/papers/` and `data/memory/` is gitignored too: `spans.json` is a paper's full text and memory is personal reading history. Public sharing goes through `learn share`, which omits page images.
 - Node 20+ is a runtime requirement, not just a test dependency: `check.py` evaluates widget models through one `node` subprocess per lesson and errors clearly if `node` is missing.
 - Papers above 150k characters of span text are refused by `generate` with a message naming the count and "chunking arrives in v1.1". A known v1 limit.
 - A lesson is one self-contained HTML file. It cannot write back to the repo. Anything the player records (your prediction) lives in the browser's localStorage and does not feed memory in v1.
@@ -35,7 +35,7 @@ Ella reads research papers for fun across many fields (EEG neurofeedback and BCI
 ## Premises (agreed)
 
 1. **Breadth over mastery.** Success = "I get what this paper did, why, and what the key knobs are" in 10-15 minutes. Recall and testing are optional deep-mode extras.
-2. **The unit of output is a lesson, not a page.** Prerequisite rungs built from the profile, then story scenes: world before + problem, what they tried, your prediction, what they found, what changed + takeaways. Each scene is one screen with an analogy from things you know, an optional widget, and a "paper's words" control. A depth dial (brief / standard / deep) controls how many rungs and scenes you see. *Revised twice in office hours: from "one interactive page" after Ella's pushback, then "predict before reveal" added from the Codex cold read. Codex's "later papers revisit your earlier predictions" is struck from v1 (see localStorage constraint).*
+2. **The unit of output is a lesson, not a page.** Prerequisite rungs built from the profile, then story scenes: world before + problem, what they tried, your prediction, what they found, what changed + takeaways. Each scene is one screen with an analogy from things you know, an optional widget, and a "paper's words" control. A depth dial (brief / standard / deep) controls how many rungs and scenes you see. *Revised twice in office hours: from "one interactive page" after the author's pushback, then "predict before reveal" added from the Codex cold read. Codex's "later papers revisit your earlier predictions" is struck from v1 (see localStorage constraint).*
 3. **Profile captures learning signals, not learning styles.** Domains you know well (analogy sources), default depth, things to skip, and an explicit "already know this" concept list. Filled by a short survey; a plain editable file. "Learns over time" is deferred until there is usage data. Basis: learning-style matching has near-zero effect (d ≈ 0.04 across meta-analyses; Pashler et al. 2008; Newton 2015); a 2024 ACL study of GPT-4 style-adapted explanations found no clear comprehension gain.
 4. **Every finding traces to a source sentence, and a checker pass is v1.** Single-pass LLM explanations get signs, equations, and numbers wrong (Intuitive Papers' experience). Claims are typed: *finding* (must cite spans; structurally checked, then semantically audited), *background* (outside knowledge the paper assumes; carries a citation string that is **not verified in v1** and renders with an "unchecked" tag), *illustrative* (analogy, labeled as such, never checked). The structural checker's pass status is called **cited**, not verified, because it proves pointing and numbers, not meaning; a flag-only audit pass covers meaning.
 5. **Widgets come from a reviewed template library.** The LLM picks a template id and fills parameters, slider ranges, and labels; trusted code implements the math and owns the hard bounds. Generated code is never executed. Every widget must cite the paper's sentence describing the mechanism it models, and the audit judges whether that text supports the template's shape (a two-group comparison never gets a smooth curve). Papers whose mechanism has no supported template get prose only in v1 (the paper's own figures are v1.1). *Revised from "LLM builds self-contained widgets" after the office-hours cold read, and hardened in eng review.*
@@ -51,7 +51,7 @@ Eng review, Codex outside voice on the reviewed plan: ten findings, all resolved
 ## Approaches Considered
 
 - **A: Python pipeline + one self-contained HTML file per lesson (CHOSEN).** CLI does survey, extract, generate, audit, check, repair, render. No server. Completeness 7/10.
-- **B: Local web app (FastAPI + Vite player, PDF.js highlights, streaming scenes, library view).** Completeness 10/10. Ella chose B, then reversed to A. Deferred: it is the upgrade path once the lesson format is stable across ~5 papers or a non-technical friend needs it. Decision logged (id 5fa11115).
+- **B: Local web app (FastAPI + Vite player, PDF.js highlights, streaming scenes, library view).** Completeness 10/10. B was chosen, then reversed to A. Deferred: it is the upgrade path once the lesson format is stable across ~5 papers or a non-technical friend needs it. Decision logged (id 5fa11115).
 - **C: marimo notebook as the player.** Rejected: notebook layout fights scene navigation and the quote panel.
 
 ## Eng Review Decisions (2026-09-13)
@@ -222,7 +222,7 @@ Records are upserted by a passing check and marked `read_date` by `learn open`. 
 
 ### Player
 
-Superseded in detail by the Design Decisions section below (2026-09-13); the office-hours wireframe at `~/.gstack/projects/ellabellae-learningtool/designs/mockup-20260912/wireframe-scene.png` is the structural ancestor, not the reference. In one paragraph: a title scene (hook question, verbatim paper title and authors, depth dial with scene count and minutes, product mark, Start), then scenes in a single reading column with a story arc as top navigation, a mechanism-first headline with the analogy as its subhead, a one-line tie-back under the headline, prose, an optional widget with a task question and an "illustrative model" badge, and a short source line under each finding that opens an evidence drawer (quote, page, crop with zoom, claim list). Predictions lock in and are revealed by the paper's own sentence. A closing scene shows the prediction beside the finding, the concepts added to memory, and the verbatim citation. Sticky footer with Back, Next, and the depth dial at every width. `render` inlines each widget template as `TEMPLATES["<id>"] = (() => { /* file with export stripped */ return {model, curve, draw}; })(manifest);` so two templates in one lesson never collide, and the player dispatches by `template_id`; node tests import the `.mjs` file directly.
+Superseded in detail by the Design Decisions section below (2026-09-13); the office-hours wireframe at (private mockup, not in this repo) is the structural ancestor, not the reference. In one paragraph: a title scene (hook question, verbatim paper title and authors, depth dial with scene count and minutes, product mark, Start), then scenes in a single reading column with a story arc as top navigation, a mechanism-first headline with the analogy as its subhead, a one-line tie-back under the headline, prose, an optional widget with a task question and an "illustrative model" badge, and a short source line under each finding that opens an evidence drawer (quote, page, crop with zoom, claim list). Predictions lock in and are revealed by the paper's own sentence. A closing scene shows the prediction beside the finding, the concepts added to memory, and the verbatim citation. Sticky footer with Back, Next, and the depth dial at every width. `render` inlines each widget template as `TEMPLATES["<id>"] = (() => { /* file with export stripped */ return {model, curve, draw}; })(manifest);` so two templates in one lesson never collide, and the player dispatches by `template_id`; node tests import the `.mjs` file directly.
 ### Extraction
 
 pymupdf4llm `to_markdown(page_chunks=True, extract_words=True)` provides reading order across columns and per-word boxes. `extract.py` then: drops header/footer words (top and bottom 6% of page height), joins words into lines and lines into text with end-of-line dehyphenation while recording an offset table per line, splits sentences by regex, maps each sentence's range back to its lines for `bboxes`, splits any sentence that crosses a page, and stops at the first heading matching References/Bibliography. Ligatures are folded by PyMuPDF's text flags. A visual spot-check script renders every span's highlight on its page so extraction is judged by eye on the first real paper.
@@ -317,18 +317,18 @@ STEP | USER DOES                        | USER FEELS                  | SPECIFIE
 
 ### Design: what already exists
 
-- The office-hours wireframe (structure only) and the Atlas mockup seeds at `~/.gstack/projects/ellaetchandy/designs/mockup-20260828/` (type and color family).
+- The office-hours wireframe (structure only) and mockup seeds from an earlier personal project (type and color family).
 - Native `<input type="range">`, `<button>`, radio groups, and `<dialog>` for the drawer: reuse platform controls before writing any custom widget.
 
 ### Approved Mockups
 
 | Screen/Section | Mockup Path | Direction | Notes |
 |----------------|-------------|-----------|-------|
-| Title scene | `~/.gstack/projects/ellabellae-learningtool/designs/mockup-20260913/01-title.png` | hook question in Instrument Serif, verbatim paper title and authors beneath, depth dial with counts and minutes, Start | decision 1A; paper meta never model-written |
-| Story scene with evidence drawer open | `~/.gstack/projects/ellabellae-learningtool/designs/mockup-20260913/02-scene-drawer.png` | single column, mechanism headline, analogy subhead, tie-back line, source lines under findings, widget with task question, badge, readout, reset; drawer with quote, crop, chips, "Not shown" | decisions 2A, 3A, 9A, tokens |
-| Prediction and reveal | `~/.gstack/projects/ellabellae-learningtool/designs/mockup-20260913/03-predict-reveal.png` | selectable rows, "Lock it in", "Skip prediction"; found scene restates the guess, the cited sentence is the answer, generous verdict | decision 8A |
-| Phone width, flagged scene | `~/.gstack/projects/ellabellae-learningtool/designs/mockup-20260913/04-phone-flagged.png` | collapsed arc, amber strip, sticky footer with segmented dial | decisions 5A, 11 |
-| Lesson scene (ancestor, 2026-09-12) | `~/.gstack/projects/ellabellae-learningtool/designs/mockup-20260912/wireframe-scene.png` | rough greyscale wireframe from office hours | superseded; kept for lineage only |
+| Title scene | (private mockup, not in this repo) | hook question in Instrument Serif, verbatim paper title and authors beneath, depth dial with counts and minutes, Start | decision 1A; paper meta never model-written |
+| Story scene with evidence drawer open | (private mockup, not in this repo) | single column, mechanism headline, analogy subhead, tie-back line, source lines under findings, widget with task question, badge, readout, reset; drawer with quote, crop, chips, "Not shown" | decisions 2A, 3A, 9A, tokens |
+| Prediction and reveal | (private mockup, not in this repo) | selectable rows, "Lock it in", "Skip prediction"; found scene restates the guess, the cited sentence is the answer, generous verdict | decision 8A |
+| Phone width, flagged scene | (private mockup, not in this repo) | collapsed arc, amber strip, sticky footer with segmented dial | decisions 5A, 11 |
+| Lesson scene (ancestor, 2026-09-12) | (private mockup, not in this repo) | rough greyscale wireframe from office hours | superseded; kept for lineage only |
 
 ### Design Implementation Tasks
 
@@ -354,7 +354,7 @@ STEP | USER DOES                        | USER FEELS                  | SPECIFIE
   - Verify: directional test plus a readout snapshot
 - [ ] **D6 (P2, human: ~1 hr / CC: ~15 min)** — wireframe — redraw the reference wireframe to match decisions 1-12 at desktop and phone widths
   - Surfaced by: post-pass mockup update
-  - Files: `~/.gstack/projects/ellabellae-learningtool/designs/`
+  - Files: (private mockup, not in this repo)
   - Verify: by eye, before `feat/player` starts
 
 ## NOT in scope
@@ -370,7 +370,7 @@ STEP | USER DOES                        | USER FEELS                  | SPECIFIE
 
 ## What already exists
 
-- **Atlas (`~/atlas`)**: the files-are-truth, CLI-is-the-pen pattern. Reused as a shape, not as code (nothing importable).
+- **An earlier personal CLI tool**: the files-are-truth, CLI-is-the-pen pattern. Reused as a shape, not as code (nothing importable).
 - **Anthropic SDK structured output** [Layer 1]: `messages.parse()` with a Pydantic model; retries and timeouts built in. Reused; nothing hand-rolled.
 - **pymupdf4llm** [Layer 1]: multi-column reading order and word boxes. Reused; the hand-rolled column clustering from the office-hours draft was removed.
 - **Anthropic prompt caching** [Layer 1]: cacheable prefix. Reused.
@@ -466,7 +466,7 @@ Synthesized from this review's findings. Run with Claude Code or Codex; checkbox
 
 ## Success Criteria
 
-- `learn lesson <pdf>` on the EEG upper-alpha neurofeedback paper produces a lesson that opens in a browser, and Ella can say what the paper did, why, and its key knobs in ≤ 15 minutes without opening the PDF.
+- `learn lesson <pdf>` on the EEG upper-alpha neurofeedback paper produces a lesson that opens in a browser, and the reader can say what the paper did, why, and its key knobs in ≤ 15 minutes without opening the PDF.
 - The spike write-up (T10) shows a prose-only lesson taught an unfamiliar paper well enough to explain method, result, and limitations from memory.
 - Every "paper's words" quote is verbatim from the PDF (spot-checked against the page crop).
 - At least one scene has a working widget whose slider changes the chart in the direction the paper implies, with the badge and evidence sentence visible.
@@ -489,17 +489,6 @@ Each is its own feature branch, merged to main when green. Order follows the par
 5. `feat/audit-check` (T5, T6)
 6. `feat/memory` (T8)
 7. `feat/eval` (T9) and `feat/tests` (T11) as the last lake
-
-## The Assignment
-
-Before any code: pick the one paper in Zotero you already understand best (the EEG upper-alpha neurofeedback paper is the candidate). Open it and mark by hand the three sentences you would want the lesson to quote, the one or two parameters you would want on a slider, the sentence that describes the mechanism those parameters belong to, and the two concepts it assumes that a friend outside BME would need first. Then pick one paper outside BME you have not read; that is the spike paper.
-
-## What I noticed about how you think
-
-- You didn't accept "one interactive page per paper." You said "is this just like a summary document then? I want to avoid that," and then described exactly what you wanted instead, with the GPT-4 report as the worked example. Most people agree with the premise and get a summarizer.
-- You asked to see the learning-styles evidence before accepting a premise built on it: "I want to know more about the research you found." Then you changed the survey's purpose based on what it said.
-- In eng review you stopped a decision three times to ask how the model actually works, for a state diagram, and for the checker rules, before choosing. You chose the recommended option every time, but only after you could draw it yourself.
-- "Think of it like a story. Each research paper can be conveyed like a storyline with a plot." That sentence is the product.
 
 ## GSTACK REVIEW REPORT
 

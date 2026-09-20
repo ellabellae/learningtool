@@ -5,6 +5,9 @@ data/papers/*/crops/
 data/papers/*/lessons/*/lesson.html
 # Spot-check renders are full page images of the paper.
 data/papers/*/spotcheck/
+# Extracted papers are the papers' full text, and memory is personal reading history: neither is committed.
+data/papers/
+data/memory/
 # Your own profile is personal; the example is committed.
 data/profile.yaml
 
@@ -17,3 +20,5 @@ build/
 dist/
 .DS_Store
 node_modules/
+# Public share output; published from the gh-pages branch, not main.
+site/

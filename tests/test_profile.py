@@ -13,14 +13,14 @@ def test_missing_profile_names_the_command(tmp_path: Path):
 
 
 def test_round_trip(tmp_path: Path):
-    p = Profile(name="ella", known_domains=["BME", "running"], default_depth="deep", known_concepts=["EEG"])
+    p = Profile(name="reader", known_domains=["BME", "running"], default_depth="deep", known_concepts=["EEG"])
     path = save_profile(p, tmp_path / "profile.yaml")
     assert load_profile(path) == p
 
 
 def test_bad_field_names_the_field_and_value(tmp_path: Path):
     path = tmp_path / "profile.yaml"
-    path.write_text("name: ella\ndefault_depth: verydeep\nknown_domains: notalist\n", encoding="utf-8")
+    path.write_text("name: reader\ndefault_depth: verydeep\nknown_domains: notalist\n", encoding="utf-8")
     with pytest.raises(ProfileError) as exc:
         load_profile(path)
     msg = str(exc.value)
@@ -31,7 +31,7 @@ def test_bad_field_names_the_field_and_value(tmp_path: Path):
 
 def test_unknown_field_is_reported(tmp_path: Path):
     path = tmp_path / "profile.yaml"
-    path.write_text("name: ella\nlearning_style: visual\n", encoding="utf-8")
+    path.write_text("name: reader\nlearning_style: visual\n", encoding="utf-8")
     with pytest.raises(ProfileError) as exc:
         load_profile(path)
     assert "learning_style" in str(exc.value)
