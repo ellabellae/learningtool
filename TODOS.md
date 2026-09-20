@@ -6,7 +6,7 @@
 
 **What:** Split spans by section heading, generate story scenes per chunk, merge scene lists, run audit and check on the merged lesson.
 
-**Why:** `learn generate` refuses long papers and truncated output is a hard failure. Long economics and review papers are exactly the ones Ella wants digested.
+**Why:** `learn generate` refuses long papers and truncated output is a hard failure. Long economics and review papers are exactly the ones worth digesting digested.
 
 **Context:** Trigger: the "lesson too long for one call (N tokens); chunking arrives in v1.1" message, or `stop_reason == max_tokens`. Start here: `learningtool/generate.py` already assembles the cacheable spans prefix; `learningtool/repair.py`'s merge-by-id knows how to combine keyed scenes. Generate prereq rungs once from the whole paper's concept list, then story scenes per chunk.
 
@@ -32,7 +32,7 @@
 
 **Why:** Rules 5, 6, and the audit strip widgets whose template shape the paper doesn't support; those scenes currently get prose only.
 
-**Context:** Trigger: most papers end up with stripped widgets, meaning the template library isn't covering the mechanisms Ella reads about. Vector plots need `page.cluster_drawings()`, not `get_images()`. Start here: `learningtool/extract.py` (figures.json), `Scene.figure_id`, `learningtool/render.py` figure panel.
+**Context:** Trigger: most papers end up with stripped widgets, meaning the template library isn't covering the mechanisms being read about. Vector plots need `page.cluster_drawings()`, not `get_images()`. Start here: `learningtool/extract.py` (figures.json), `Scene.figure_id`, `learningtool/render.py` figure panel.
 
 **Effort:** M
 **Priority:** P3
