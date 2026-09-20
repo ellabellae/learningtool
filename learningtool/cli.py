@@ -207,7 +207,12 @@ def cmd_share(args: argparse.Namespace) -> int:
         if checks is None or not checks.passed():
             print(f"share    refusing {paper_id[:12]}: only lessons that pass the checker are shared (run: learn check {paper_id[:12]})", file=sys.stderr)
             return 1
-        source_url = args.source_url or detect_source_url(meta, spans)
+        # A link given once is remembered beside the paper, so later shares (of many papers) keep it.
+        url_file = PAPERS_DIR / paper_id / "source_url.txt"
+        if args.source_url:
+            url_file.write_text(args.source_url.strip() + "\n", encoding="utf-8")
+        saved = url_file.read_text(encoding="utf-8").strip() if url_file.exists() else None
+        source_url = saved or detect_source_url(meta, spans)
         try:
             page = render(
                 RenderInputs(
