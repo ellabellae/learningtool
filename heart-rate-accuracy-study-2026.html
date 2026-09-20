@@ -1,0 +1,1437 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Heart Rate Accuracy Study 2026 · learningtool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>:root{
+  --paper:#F7F3EC;--ink:#1F1D1A;--slate:#5B5F66;--terracotta:#B5502F;--amber:#B8860B;--amber-bg:#FFF4D6;--hairline:#D9D2C5;
+  --serif:"Instrument Serif",Georgia,"Times New Roman",serif;--sans:Inter,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;--mono:ui-monospace,Menlo,Consolas,monospace;
+  --u:8px;--measure:68ch;
+}
+*{box-sizing:border-box}
+html{color-scheme:light}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:18px;line-height:1.55}
+::selection{background:var(--terracotta);color:#fff}
+:focus-visible{outline:2px solid var(--terracotta);outline-offset:2px}
+a{color:var(--ink);text-decoration-color:var(--hairline);text-underline-offset:3px}a:visited{color:var(--slate)}
+h1,h3{font-weight:400}
+.visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+[hidden]{display:none!important}
+
+.banner{background:var(--amber-bg);border-bottom:1px solid var(--amber);color:#5a4400;padding:calc(var(--u)) calc(4*var(--u));font-size:16px}
+
+/* Top bar and arc */
+.top{position:sticky;top:0;z-index:5;display:flex;align-items:flex-start;gap:calc(3*var(--u));padding:calc(1.5*var(--u)) calc(4*var(--u));border-bottom:1px solid var(--hairline);background:var(--paper);font-size:16px}
+.mark{color:var(--slate);white-space:nowrap;padding-top:2px}
+.arc{flex:1;min-width:0}
+.arc ol{list-style:none;margin:0;padding:0;display:flex}
+.arc li{position:relative;flex:1;min-width:72px}
+@media (max-width:1399px){.ptitle{display:none}}
+.arc li::before{content:"";position:absolute;top:8px;left:50%;width:100%;height:1px;background:var(--hairline)}
+.arc li:last-child::before{display:none}
+.arc button{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;width:100%;background:none;border:0;padding:0;font:inherit;color:var(--slate);cursor:pointer;min-height:44px}
+.arc i{width:14px;height:14px;border-radius:50%;border:1px solid var(--slate);background:var(--paper);display:block;margin-top:1px}
+.arc li.done i{background:var(--slate)}
+.arc li.cur i{background:var(--terracotta);border-color:var(--terracotta)}
+.arc li.flag i{box-shadow:0 0 0 2px var(--paper),0 0 0 4px var(--amber)}
+.arc span{margin-top:6px;text-align:center;font-size:16px;line-height:1.2;padding:0 2px}
+.arc li.pre span{font-style:italic}
+.arc li.hidden-depth{display:none}
+.arc li.nolabel span{visibility:hidden}
+.arc li.nolabel button:hover span,.arc li.nolabel button:focus-visible span{visibility:visible}
+.ptitle{color:var(--slate);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:26ch;padding-top:2px}
+.counter{color:var(--slate);white-space:nowrap;padding-top:2px}
+.menu{display:none}
+
+/* Scene */
+main{max-width:var(--measure);margin:0 auto;padding:calc(6*var(--u)) calc(4*var(--u)) calc(15*var(--u))}
+.scene{outline:none}
+.scene.flagged{border-left:4px solid var(--amber);padding-left:calc(3*var(--u));margin-left:calc(-3*var(--u) - 4px)}
+.kick{font-size:16px;color:var(--slate);margin:0 0 var(--u)}
+.headline{font-family:var(--serif);font-size:28px;line-height:1.2;margin:0 0 var(--u)}
+.hook{font-family:var(--serif);font-size:40px;line-height:1.2;margin:0 0 calc(2*var(--u))}
+.ana{font-family:var(--serif);font-size:22px;color:var(--slate);margin:0 0 var(--u)}
+.tie{font-size:16px;color:var(--slate);margin:0 0 calc(3*var(--u))}
+.prose{margin:calc(2*var(--u)) 0 calc(2.5*var(--u))}
+.pmeta{color:var(--slate);margin:0 0 calc(4*var(--u))}.pmeta b{font-weight:500;color:var(--ink)}
+.dl{font-size:16px;color:var(--slate);margin:0 0 var(--u)}
+.share-note{font-size:16px;color:var(--slate);border-left:2px solid var(--hairline);padding-left:calc(1.5*var(--u));margin:0 0 calc(3*var(--u))}
+.strip{background:var(--amber-bg);border-left:4px solid var(--amber);color:#5a4400;padding:calc(1.25*var(--u)) calc(2*var(--u));font-size:16px;margin:0 0 calc(3*var(--u))}
+.src{font-size:16px;color:var(--slate);border-left:2px solid var(--hairline);padding-left:calc(1.5*var(--u));margin:calc(-1*var(--u)) 0 calc(3*var(--u))}
+.src .linkish{text-align:left}
+.chip{display:inline-block;font-size:16px;border:1px solid var(--hairline);border-radius:3px;padding:0 6px;margin-left:6px;white-space:nowrap}
+.removed{font-size:16px;color:var(--slate);border:1px dashed var(--hairline);padding:var(--u) calc(2*var(--u));margin:0 0 calc(3*var(--u))}
+.linkish{background:none;border:0;padding:0;font:inherit;color:inherit;text-decoration:underline;text-decoration-color:var(--hairline);text-underline-offset:3px;cursor:pointer}
+.btn{border:1px solid var(--ink);border-radius:4px;padding:10px 18px;background:#fff;font:inherit;font-size:16px;cursor:pointer;min-height:44px}
+.btn.p{background:var(--terracotta);color:#fff;border-color:var(--terracotta)}
+.btn[disabled]{opacity:.45;cursor:default}
+.dial{display:flex;flex-wrap:wrap;gap:var(--u);font-size:16px;margin:0 0 calc(3*var(--u))}
+.dial label{border:1px solid var(--slate);border-radius:14px;padding:5px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;min-height:34px}
+.dial label:has(input:checked){background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.dial input{position:absolute;opacity:0;width:1px;height:1px}
+.dial label:has(input:focus-visible){outline:2px solid var(--terracotta);outline-offset:2px}
+
+/* Widget */
+.widget{border:1px solid var(--hairline);border-radius:4px;padding:calc(2.5*var(--u));margin:var(--u) 0 calc(3*var(--u));background:#fff}
+.widget .q{margin:0 0 4px;font-weight:500}
+.widget .badge{font-size:16px;color:var(--slate);margin:0 0 calc(1.5*var(--u))}
+.widget .chart{position:relative;border-bottom:1px solid var(--hairline)}
+.widget canvas{width:100%;height:auto;display:block}
+.widget .unavailable{font-size:16px;color:var(--slate);padding:calc(2*var(--u)) 0}
+.sliders{display:grid;grid-template-columns:1fr 1fr;gap:calc(4*var(--u));margin-top:calc(1.75*var(--u));font-size:16px}
+.sliders label{display:block}
+.sliders .val{float:right;font-family:var(--mono)}
+.sliders input[type=range]{width:100%;accent-color:var(--terracotta);margin:var(--u) 0 4px;min-height:24px}
+.sliders .nudge{color:var(--slate);font-size:16px}
+.read{font-family:var(--mono);font-size:16px;margin:calc(1.5*var(--u)) 0 0}.read b{color:var(--terracotta);font-weight:500}
+.evidence{font-size:16px;color:var(--slate);border-left:2px solid var(--hairline);padding-left:calc(1.5*var(--u));margin:calc(2*var(--u)) 0 0}
+
+/* Prediction and reveal */
+.predict{border:0;padding:0;margin:0 0 calc(2*var(--u))}
+.opt{display:flex;gap:calc(1.5*var(--u));align-items:flex-start;border:1px solid var(--hairline);border-radius:4px;padding:calc(2*var(--u));margin:0 0 var(--u);background:#fff;cursor:pointer;min-height:44px}
+.opt:has(input:checked){border-color:var(--terracotta);box-shadow:inset 0 0 0 1px var(--terracotta)}
+.opt input{accent-color:var(--terracotta);margin-top:6px}
+.predict.locked .opt{cursor:default;opacity:.85}
+.predict-actions{display:flex;gap:calc(2*var(--u));align-items:center;flex-wrap:wrap}
+.locked-note{font-size:16px;color:var(--slate)}
+.said{font-size:16px;color:var(--slate);border:1px solid var(--hairline);padding:calc(1.25*var(--u)) calc(2*var(--u));margin:0 0 calc(2*var(--u))}
+.rev{font-family:var(--serif);font-size:22px;line-height:1.4;border-left:3px solid var(--terracotta);padding-left:calc(2*var(--u));margin:0 0 var(--u);opacity:0;transition:opacity 150ms ease-out}
+.rev.in{opacity:1}
+.rev footer{font-family:var(--sans);font-size:16px;color:var(--slate);margin-top:4px}
+.rev p{margin:0}
+.verd{margin:0 0 calc(3*var(--u))}
+
+/* Closing */
+.closing h3{font-size:16px;color:var(--slate);margin:calc(3*var(--u)) 0 var(--u)}
+.concepts{padding-left:1.2em}.concepts b{font-weight:500}
+.quote{font-family:var(--serif);font-size:22px;line-height:1.4;border-left:3px solid var(--ink);padding-left:calc(2*var(--u));margin:var(--u) 0}
+.quote p{margin:0}.quote footer{font-family:var(--sans);font-size:16px;color:var(--slate);margin-top:4px}
+.cite{color:var(--slate)}
+
+/* Footer */
+.foot{position:sticky;bottom:0;z-index:5;display:flex;justify-content:space-between;align-items:center;gap:calc(2*var(--u));padding:calc(1.5*var(--u)) calc(4*var(--u));border-top:1px solid var(--hairline);background:var(--paper);font-size:16px}
+.foot .dial{margin:0}
+.foot .btn{margin-left:var(--u)}
+
+/* Drawer */
+dialog{border:0;padding:0;background:transparent;max-width:none;max-height:none}
+dialog::backdrop{background:rgba(31,29,26,.18)}
+#drawer{position:fixed;inset:0 0 0 auto;width:420px;height:100%;margin:0}
+#drawer .drawer-inner{height:100%;overflow:auto;background:#fff;border-left:1px solid var(--hairline);box-shadow:0 8px 24px rgba(31,29,26,.12);padding:calc(3.5*var(--u));font-size:16px;transform:translateX(100%);transition:transform 200ms ease-out}
+#drawer[open] .drawer-inner{transform:none}
+#drawer h3{font-size:16px;color:var(--slate);margin:calc(2*var(--u)) 0 calc(1.5*var(--u))}
+#drawer .claims{list-style:none;padding:0;margin:0}
+#drawer .claims li{padding:var(--u) 0;border-top:1px solid var(--hairline)}
+#drawer .claims li.active{background:var(--paper);margin:0 calc(-1*var(--u));padding:var(--u)}
+#drawer .crop{margin:var(--u) 0 0}
+#drawer .crop img{max-width:100%;max-height:220px;object-fit:contain;border:1px solid var(--hairline);display:block}
+#drawer .crop.zoomed img{max-height:none;width:auto;max-width:none}
+#drawer .crop figcaption{font-size:16px;color:var(--slate)}
+#drawer .notshown{padding-left:1.2em;color:var(--slate)}
+.close-drawer{float:right}
+#scene-menu{margin:auto;background:#fff;border:1px solid var(--hairline);padding:calc(3*var(--u));width:min(90vw,420px)}
+#scene-menu ol{padding-left:1.4em}#scene-menu li{padding:4px 0}#scene-menu button{font-size:16px}
+
+/* Motion */
+.scene.enter{animation:fade 150ms ease-out}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){
+  .scene.enter{animation:none}.rev{transition:none}#drawer .drawer-inner{transition:none}
+}
+
+/* Tablet */
+@media (max-width:1023px){
+  .arc li:not(.cur):not(.near) span{visibility:hidden}
+  #drawer{inset:auto 0 0 0;width:100%;height:70vh}
+  #drawer .drawer-inner{border-left:0;border-top:1px solid var(--hairline);transform:translateY(100%)}
+  #drawer[open] .drawer-inner{transform:none}
+}
+/* Phone */
+@media (max-width:767px){
+  body{font-size:17px}
+  .top{padding:calc(1.5*var(--u)) calc(2*var(--u));align-items:center}
+  .arc,.ptitle{display:none}
+  .menu{display:inline-block;margin-left:auto}
+  .mark{display:none}
+  main{padding:calc(3*var(--u)) calc(2*var(--u)) calc(14*var(--u))}
+  .headline{font-size:26px}.hook{font-size:32px}
+  .sliders{grid-template-columns:1fr}
+  .foot{padding:calc(1.5*var(--u)) calc(2*var(--u))}
+  .foot .dial{flex-wrap:nowrap;gap:4px}
+  .foot .dial label{padding:5px 8px;min-height:40px}
+  .foot .btn{padding:10px 12px;margin-left:4px}
+  #drawer{height:100%}
+  .scene.flagged{margin-left:0;padding-left:calc(2*var(--u))}
+}
+</style>
+</head>
+<body data-paper="4164de6f5e6863c790ba8accc3b327b37bc07df7402bf4c0ef82a592d1b68593" data-profile="Ella" data-default-depth="standard">
+
+
+
+<header class="top">
+  <span class="mark">learningtool · paper lesson</span>
+  <nav class="arc" aria-label="Lesson scenes">
+    <ol id="arc">
+      <li data-idx="0" data-depth="brief"><button type="button" aria-current="true"><i></i><span>Start</span></button></li>
+      
+      <li data-idx="1" data-depth="brief" class="pre"><button type="button"><i></i><span>PPG motion artifact and…</span></button></li>
+      
+      <li data-idx="2" data-depth="standard" class="pre"><button type="button"><i></i><span>Paired head-to-head des…</span></button></li>
+      
+      <li data-idx="3" data-depth="standard" class="pre"><button type="button"><i></i><span>RMSE versus MAE</span></button></li>
+      
+      <li data-idx="4" data-depth="deep" class="pre"><button type="button"><i></i><span>Random intercept for re…</span></button></li>
+      
+      <li data-idx="5" data-depth="standard" class=""><button type="button"><i></i><span>The world before</span></button></li>
+      
+      <li data-idx="6" data-depth="brief" class=""><button type="button"><i></i><span>The problem</span></button></li>
+      
+      <li data-idx="7" data-depth="brief" class=""><button type="button"><i></i><span>What they tried</span></button></li>
+      
+      <li data-idx="8" data-depth="deep" class=""><button type="button"><i></i><span>What they tried</span></button></li>
+      
+      <li data-idx="9" data-depth="brief" class=""><button type="button"><i></i><span>Your prediction</span></button></li>
+      
+      <li data-idx="10" data-depth="brief" class=""><button type="button"><i></i><span>What they found</span></button></li>
+      
+      <li data-idx="11" data-depth="deep" class=""><button type="button"><i></i><span>What they found</span></button></li>
+      
+      <li data-idx="12" data-depth="brief" class=""><button type="button"><i></i><span>What changed</span></button></li>
+      
+      <li data-idx="13" data-depth="brief"><button type="button"><i></i><span>Close</span></button></li>
+    </ol>
+  </nav>
+  <span class="ptitle" title="Heart Rate Accuracy Study 2026">Heart Rate Accuracy Study 2026</span>
+  <span class="counter" id="counter" aria-live="polite"></span>
+  <button type="button" class="menu" id="menu" aria-haspopup="dialog">Scenes</button>
+</header>
+
+<main id="main">
+  <!-- Title scene -->
+  <section class="scene title" data-idx="0" data-role="title" data-depth="brief" tabindex="-1">
+    <p class="kick">A paper lesson</p>
+    <h1 class="hook">If two smartwatches on the same person disagree about your heart rate during a sprint, how would you ever prove which one is right?</h1>
+    <p class="pmeta"><b>Heart Rate Accuracy Study 2026</b><br>
+      Apple · Heart Rate Accuracy · 2026 · 9 pages</p>
+    
+    <p class="share-note">An unofficial lesson generated from the paper above. Every quote is the paper's own sentence with its page number. Page images are omitted in this shared version because the source paper is copyrighted; the full tool shows the highlighted page beside every quote.</p>
+    <p class="dl">Depth</p>
+    <div class="dial" role="radiogroup" aria-label="Depth">
+      
+      <label><input type="radio" name="depth" value="brief"> brief · 8 scenes · 4 min</label>
+      
+      <label><input type="radio" name="depth" value="standard" checked> standard · 11 scenes · 6 min</label>
+      
+      <label><input type="radio" name="depth" value="deep"> deep · 14 scenes · 9 min</label>
+      
+    </div>
+    <p><button type="button" class="btn p" id="start">Start →</button></p>
+    
+    <p class="dl">First, 4 things the paper assumes: PPG motion artifact and…, Paired head-to-head des…, RMSE versus MAE, Random intercept for re…. Then the paper.</p>
+  </section>
+
+  
+  <section class="scene prereq" data-idx="1" data-id="prereq-ppg" data-role="prereq" data-depth="brief" data-seconds="38" hidden tabindex="-1">
+    
+    
+    <p class="kick">Before the paper</p>
+    <h1 class="headline">Wrist optical heart rate is inferred from light scattering, and rhythmic motion can masquerade as a pulse</h1>
+    <p class="ana">It&#39;s like listening for a heartbeat with a stethoscope while someone taps the table at almost exactly the same tempo — the instrument can lock onto the wrong rhythm.</p>
+    
+
+    
+      <p class="prose">A photoplethysmography (PPG) sensor shines light into the skin and watches how much comes back. Blood volume pulses with each heartbeat, so the reflected-light waveform carries a periodic signal the algorithm turns into beats per minute.
+
+The trouble is that the same waveform is contaminated by anything that moves tissue or shifts the optical path: running cadence, muscle tension, sensor rocking. When footstrike frequency sits near heart rate, an algorithm can track the steps instead of the heart — &#34;cadence lock.&#34;
+
+This paper&#39;s activity menu was chosen deliberately to provoke exactly these failure modes, rather than to flatter the sensors.</p>
+    
+
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-ppg-activities">“This mix of activities was specifically selected to include challenging conditions for op…” · p. 3</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-ppg-system">“With the release of Apple Watch Series 12 and Apple Watch Ultra 4, Apple introduced the H…” · p. 2</button> <span class="chip">Cited</span></p>
+    
+
+    
+
+    <template class="drawer-content">
+      
+      <h3>Claims in this scene</h3>
+      <ul class="claims">
+        
+        <li data-claim="c-ppg-bg">
+          <span>PPG estimates heart rate from pulsatile changes in light absorbed and reflected by perfused tissue, and is susceptible to motion artifact.</span> <span class="chip">Background · unchecked</span>
+          <p class="dl">Source: J. Allen, &#34;Photoplethysmography and its application in clinical physiological measurement,&#34; Physiological Measurement, 2007 (outside the paper; not checked in v1)</p>
+        </li>
+        
+        <li data-claim="c-ppg-activities" data-span="sp-003-0016">
+          <span>The activity mix was selected to include conditions known to challenge optical heart rate: cadence lock in running, loaded forearm grip in strength training and cycling, and rapid wrist motion plus fast heart rate transitions in HIIT.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“This mix of activities was specifically selected to include challenging conditions for optical heart rate performance — e.g., cadence lock associated with running, loaded forearm grip associated with strength training and cycling, rapid wrist motion and heart rate transitions associated with HIIT.”</p><footer>p. 3 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+        <li data-claim="c-ppg-system" data-span="sp-002-0005">
+          <span>Apple&#39;s Health Sensing System on Series 12 and Ultra 4 includes updated electrical and optical (PPG) heart sensors plus new signal processing algorithms.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“With the release of Apple Watch Series 12 and Apple Watch Ultra 4, Apple introduced the Health Sensing System, which includes both updated electrical and optical (photoplethysmography, or PPG) heart sensors and associated signal processing algorithms, as well as several features enabled by the new technology, such as Recovery HRV and the Readiness app.”</p><footer>p. 2 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+      </ul>
+      
+      
+    </template>
+  </section>
+  
+  <section class="scene prereq" data-idx="2" data-id="prereq-reference" data-role="prereq" data-depth="standard" data-seconds="38" hidden tabindex="-1">
+    
+    
+    <p class="kick">Before the paper</p>
+    <h1 class="headline">Each participant wore both devices at once against a chest-strap ECG reference, with wrist assignment randomized</h1>
+    <p class="ana">Like an A/B test where both variants run on the same customer at the same moment, so seasonality and customer quality can&#39;t explain the gap.</p>
+    
+
+    
+      <p class="prose">Comparing devices across different people or different workouts invites confounding. The fix here is a within-participant paired design: an Apple Watch on one wrist, the comparator on the other, both referenced to a Polar H10 ECG chest strap worn simultaneously.
+
+Dominance matters — your non-dominant wrist moves differently — so watch side was randomized to roughly a 50/50 split.
+
+Pairing only works if the clocks agree. Every device, including the chest strap, was paired to its own Wi-Fi phone for network time synchronization, and then each device sample was matched to its nearest-neighbor reference timestamp so accuracy could be scored sample by sample.</p>
+    
+
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-ref-standard">“This paper summarizes the accuracy of the updated optical heart rate sensing system relat…” · p. 2</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-ref-paired">“Participants wore an Apple Watch on one wrist, and a comparative wrist-based device on th…” · p. 3</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-ref-random">“Wrist assignment was randomized such that Apple Watch was worn on the dominant hand appro…” · p. 3</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-ref-time">“To ensure devices were appropriately time synchronized using network time protocol (NTP),…” · p. 5</button> <span class="chip">Cited</span></p>
+    
+
+    
+
+    <template class="drawer-content">
+      
+      <h3>Claims in this scene</h3>
+      <ul class="claims">
+        
+        <li data-claim="c-ref-standard" data-span="sp-002-0006">
+          <span>An ECG chest strap served as the reference, described as an established standard for evaluating wearable heart rate accuracy.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“This paper summarizes the accuracy of the updated optical heart rate sensing system relative to other devices in the wearables category through a large multi-site head-tohead study, using an ECG chest strap as reference, which is an established standard used for evaluating heart rate accuracy of wearables&lt;sup 1,2&lt;/sup .”</p><footer>p. 2 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+        <li data-claim="c-ref-paired" data-span="sp-003-0008">
+          <span>Participants wore an Apple Watch on one wrist and a comparative wrist device on the other while wearing a Polar H10 ECG chest strap as reference.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Participants wore an Apple Watch on one wrist, and a comparative wrist-based device on the other, while using a Polar H10 ECG based chest strap as reference.”</p><footer>p. 3 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+        <li data-claim="c-ref-random" data-span="sp-003-0009">
+          <span>Wrist assignment was randomized so the Apple Watch was on the dominant hand about 50% of the time.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Wrist assignment was randomized such that Apple Watch was worn on the dominant hand approximately 50% of the time.”</p><footer>p. 3 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+        <li data-claim="c-ref-time" data-span="sp-005-0051">
+          <span>Every device, including the watch and the chest strap, was Bluetooth-paired to its own Wi-Fi phone to ensure NTP time synchronization, and measurements were then matched to the nearest-neighbor reference timestamp.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“To ensure devices were appropriately time synchronized using network time protocol (NTP), every device (including the Apple Watch and the Polar H10 chest strap) was Bluetooth®-paired to its own Wi-Fi-enabled companion phone.”</p><footer>p. 5 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+      </ul>
+      
+      
+    </template>
+  </section>
+  
+  <section class="scene prereq" data-idx="3" data-id="prereq-metrics" data-role="prereq" data-depth="standard" data-seconds="38" hidden tabindex="-1">
+    
+    
+    <p class="kick">Before the paper</p>
+    <h1 class="headline">Accuracy was scored per session with both MAE and RMSE, plus a separate session-average comparison</h1>
+    <p class="ana">MAE is your average monthly burn; RMSE is the metric that screams when one month blows up the runway.</p>
+    
+
+    
+      <p class="prose">For each session, the paper computes Mean Absolute Error and Root Mean Square Error against the reference. Both are standard, but they answer different questions: because RMSE squares errors before averaging, it is more sensitive to a stream that is usually fine but occasionally badly wrong.
+
+A third metric is the session-level average heart rate — what a device reports as your workout mean. That matters especially for screenless wearables, where you never see a live number at all; the summary is the whole experience.
+
+One convention to hold onto: every reported result is a difference in error, Apple minus comparator, in bpm. Negative means Apple&#39;s error was smaller.</p>
+    
+
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-met-both">“Accuracy for each session was evaluated using both Root Mean Square Error (RMSE) and Mean…” · p. 5</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-met-session">“This allowed us to assess the accuracy of a session summary metric, which is especially r…” · p. 5</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-met-sign">“Each reported metric is a mean accuracy difference (reported in bpm), so a negative diffe…” · p. 5</button> <span class="chip">Cited</span></p>
+    
+
+    
+
+    <template class="drawer-content">
+      
+      <h3>Claims in this scene</h3>
+      <ul class="claims">
+        
+        <li data-claim="c-met-both" data-span="sp-005-0057">
+          <span>Session accuracy was evaluated with both RMSE and MAE, with RMSE being more sensitive to infrequent but significant errors.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Accuracy for each session was evaluated using both Root Mean Square Error (RMSE) and Mean Absolute Error (MAE) calculations, which are standard methods of comparative accuracy testing, with RMSE being more sensitive in identifying a data stream that may have infrequent but significant errors.”</p><footer>p. 5 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+        <li data-claim="c-met-session" data-span="sp-005-0060">
+          <span>Session-level average heart rate was also compared to the reference, which is especially relevant for screenless devices that cannot show live heart rate without a phone.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“This allowed us to assess the accuracy of a session summary metric, which is especially relevant for devices without screens — where live heart rate cannot be provided to the user without engagement with a smartphone.”</p><footer>p. 5 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+        <li data-claim="c-met-sign" data-span="sp-005-0064">
+          <span>Each reported metric is a mean accuracy difference in bpm, where a negative difference means Apple Watch error was lower than the comparison device&#39;s.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Each reported metric is a mean accuracy difference (reported in bpm), so a negative difference means the error associated with Apple Watch was less than that of the comparison device.”</p><footer>p. 5 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+      </ul>
+      
+      
+    </template>
+  </section>
+  
+  <section class="scene prereq" data-idx="4" data-id="prereq-stats" data-role="prereq" data-depth="deep" data-seconds="47" hidden tabindex="-1">
+    
+    
+    <p class="kick">Before the paper</p>
+    <h1 class="headline">A mixed model with per-participant random intercepts handled repeated measures, and bootstrap intervals handled six simultaneous comparisons</h1>
+    <p class="ana">Treating one person&#39;s five workouts as five independent data points is like counting a single enthusiastic customer&#39;s five reorders as five customers in your conversion rate.</p>
+    
+
+    
+      <p class="prose">Each participant did several activities, so their sessions are correlated: a person with awkward wrist anatomy will tend to produce high error everywhere. A linear mixed model on the paired difference, with activity as a fixed effect and a random intercept per participant, absorbs that person-level offset instead of pretending every session is independent.
+
+The overall number reported is an equally weighted mean of activity means — so a single long activity can&#39;t dominate. Uncertainty came from a bias-corrected and accelerated bootstrap clustered by participant, reported at 99% rather than 95% because six devices are being compared at once.
+
+Sample size was fixed in advance: at least 50 participants per workout activity per comparator, powered at 80% for a paired effect of about Cohen&#39;s dz 0.5 in MAE with Bonferroni adjustment.</p>
+    
+
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-stat-lmm">“A linear mixed model (LMM) was used to model the paired difference (Apple Watch - Compari…” · p. 5</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-stat-boot">“The reported overall accuracy difference was the equally-weighted mean of the activity me…” · p. 5</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-stat-power">“Sizing, which pertains only to workouts and not Daily Living, assumed 80% power to detect…” · p. 4</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-stat-mde">“The smallest detectable difference in mean MAE ranged from approximately 2.5 bpm (outdoor…” · p. 4</button> <span class="chip">Cited</span></p>
+    
+
+    
+
+    <template class="drawer-content">
+      
+      <h3>Claims in this scene</h3>
+      <ul class="claims">
+        
+        <li data-claim="c-stat-lmm" data-span="sp-005-0061">
+          <span>A linear mixed model modeled the paired difference per participant and activity, with activity as a fixed effect and a random intercept per participant to account for within-participant correlation.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“A linear mixed model (LMM) was used to model the paired difference (Apple Watch - Comparison Device) for each accuracy metric per participant and activity, treating activity as a fixed effect and incorporating a random intercept per participant to account for within-participant correlation of their repeated measures.”</p><footer>p. 5 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+        <li data-claim="c-stat-boot" data-span="sp-005-0062">
+          <span>The overall accuracy difference was the equally weighted mean of activity means, with a 99% bias-corrected and accelerated bootstrap confidence interval clustered by participant to account for multiple device comparisons.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“The reported overall accuracy difference was the equally-weighted mean of the activity means, and a 99% bias-corrected and accelerated (BCa) bootstrap confidence interval (clustered by participant) was computed to account for the multiplicity of device comparisons.”</p><footer>p. 5 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+        <li data-claim="c-stat-power" data-span="sp-004-0042">
+          <span>Sample size was pre-specified at a minimum of 50 participants per workout activity per comparator, assuming 80% power for a paired standardized difference of about 0.5 in MAE with a two-sided test at alpha 0.05 and Bonferroni adjustment for six comparisons.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Sizing, which pertains only to workouts and not Daily Living, assumed 80% power to detect a standardized paired difference (Cohen&#39;s dz) of approximately 0.5 in Mean Absolute Error (MAE), using a twosided test with α = 0.05 and Bonferroni adjustment for the six device comparisons.”</p><footer>p. 4 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+        <li data-claim="c-stat-mde" data-span="sp-004-0043">
+          <span>The smallest detectable difference in mean MAE ranged from roughly 2.5 bpm for outdoor running and cycling to 3.7 bpm for HIIT under the assumed variance.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“The smallest detectable difference in mean MAE ranged from approximately 2.5 bpm (outdoor running and cycling) to 3.7 bpm (HIIT), under assumed between-participant MAE standard deviations of 5.0–7.5 bpm and a between-device correlation of 0.5.”</p><footer>p. 4 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+      </ul>
+      
+      
+    </template>
+  </section>
+  
+  <section class="scene before" data-idx="5" data-id="before" data-role="before" data-depth="standard" data-seconds="36" hidden tabindex="-1">
+    
+    
+    <p class="kick">The world before</p>
+    <h1 class="headline">Heart rate is not just a displayed number; it is an input to calorie, VO2 max, and alert features</h1>
+    <p class="ana">It&#39;s the raw sensor reading at the bottom of a product stack — every derived metric inherits its error, the way a mis-calibrated scale poisons every dosing calculation downstream.</p>
+    
+
+    
+      <p class="prose">Wearable heart rate tracking is consumed twice: once by the user glancing at a number, and once by the software stack that turns that number into calorie burn, VO2 max, cycle predictions, and high/low heart rate alerts.
+
+That makes accuracy structural rather than cosmetic. An error in beats per minute propagates into every derived insight and into clinical-adjacent notifications.
+
+Apple frames its new Health Sensing System — updated electrical and optical sensors with new algorithms, enabling features like Recovery HRV and a Readiness app — as the reason a fresh accuracy evaluation was warranted.</p>
+    
+
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-bef-uses">“It&#39;s used for daily health and workout insights as well as an input to core features, suc…” · p. 2</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-bef-system">“With the release of Apple Watch Series 12 and Apple Watch Ultra 4, Apple introduced the H…” · p. 2</button> <span class="chip">Cited</span></p>
+    
+
+    
+
+    <template class="drawer-content">
+      
+      <h3>Claims in this scene</h3>
+      <ul class="claims">
+        
+        <li data-claim="c-bef-uses" data-span="sp-002-0003">
+          <span>Heart rate tracking feeds features including calorie estimates, VO2 max estimates, period predictions, and high and low heart rate alerts, making its accuracy critical to the user experience.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“It&#39;s used for daily health and workout insights as well as an input to core features, such as calorie estimates, VO2 max estimates, period predictions, high and low heart rate alerts, and many others.”</p><footer>p. 2 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+        <li data-claim="c-bef-system" data-span="sp-002-0005">
+          <span>The Health Sensing System introduced with Series 12 and Ultra 4 also enables new features such as Recovery HRV and the Readiness app.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“With the release of Apple Watch Series 12 and Apple Watch Ultra 4, Apple introduced the Health Sensing System, which includes both updated electrical and optical (photoplethysmography, or PPG) heart sensors and associated signal processing algorithms, as well as several features enabled by the new technology, such as Recovery HRV and the Readiness app.”</p><footer>p. 2 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+      </ul>
+      
+      
+    </template>
+  </section>
+  
+  <section class="scene problem" data-idx="6" data-id="problem" data-role="problem" data-depth="brief" data-seconds="36" hidden tabindex="-1">
+    
+    
+    <p class="kick">The problem</p>
+    <h1 class="headline">Nobody had run a head-to-head wearable heart rate comparison large enough to support statistically powered conclusions across many activities</h1>
+    <p class="ana">Like a market claim built on a dozen friendly beta users instead of a pre-registered trial big enough to survive scrutiny.</p>
+    
+
+    
+      <p class="prose">The question &#34;which wearable measures heart rate best?&#34; is easy to ask and hard to answer credibly. You need a trusted reference, the same people wearing competing devices at the same time, enough activities to cover real use, and enough participants that small differences are not noise.
+
+The paper&#39;s stated aim is to evaluate the updated optical sensing system against other devices in the category using an ECG chest strap reference, in a large multi-site head-to-head design with over 1,000 participants.
+
+The comparator set was chosen for coverage: brands representing roughly 90% of the worldwide smartwatch category, plus two prominent screenless wearables.</p>
+    
+
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-prob-aim">“This paper summarizes the accuracy of the updated optical heart rate sensing system relat…” · p. 2</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-prob-power">“The study, with over 1,000 participants, evaluates a broad set of comparative devices, ac…” · p. 2</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-prob-market">“These brands represent approximately 90% of the worldwide smartwatch category, as well as…” · p. 3</button> <span class="chip">Cited</span></p>
+    
+
+    
+
+    <template class="drawer-content">
+      
+      <h3>Claims in this scene</h3>
+      <ul class="claims">
+        
+        <li data-claim="c-prob-aim" data-span="sp-002-0006">
+          <span>The paper evaluates the updated optical heart rate system against other wearables in a large multi-site head-to-head study using an ECG chest strap reference.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“This paper summarizes the accuracy of the updated optical heart rate sensing system relative to other devices in the wearables category through a large multi-site head-tohead study, using an ECG chest strap as reference, which is an established standard used for evaluating heart rate accuracy of wearables&lt;sup 1,2&lt;/sup .”</p><footer>p. 2 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+        <li data-claim="c-prob-power" data-span="sp-002-0007">
+          <span>The study, with over 1,000 participants, spans a broad device set and wide range of activities with sample size intended to allow statistically powered conclusions.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“The study, with over 1,000 participants, evaluates a broad set of comparative devices, across a wide range of activities, with sufficient sample size to allow for statistically powered conclusions.”</p><footer>p. 2 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+        <li data-claim="c-prob-market" data-span="sp-003-0012">
+          <span>The brands studied represent approximately 90% of the worldwide smartwatch category, plus two prominent screenless wearable devices.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“These brands represent approximately 90% of the worldwide smartwatch category, as well as two prominent screenless wearable devices&lt;sup 4&lt;/sup .”</p><footer>p. 3 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+      </ul>
+      
+      
+    </template>
+  </section>
+  
+  <section class="scene tried" data-idx="7" data-id="tried" data-role="tried" data-depth="brief" data-seconds="44" hidden tabindex="-1">
+    
+    
+    <p class="kick">What they tried</p>
+    <h1 class="headline">1,460 participants across five sites did runs, cycling, HIIT, strength training, and a daily-living protocol wearing seven devices</h1>
+    <p class="ana">A multi-site clinical trial protocol, borrowed wholesale for consumer electronics benchmarking.</p>
+    
+
+    
+      <p class="prose">Comparators were Garmin Forerunner 970, Google Pixel Watch 4, Huawei Watch 5, Samsung Galaxy Watch 8, WHOOP 5, and — worn on an index finger per manufacturer guidance — Oura Ring 5, all latest models as of July–August 2026. The ring was skipped for strength training, per Oura&#39;s own advice against lifting in it.
+
+Workouts ran 15–20 minutes each: outdoor runs at varied speeds, treadmill intervals, outdoor cycling, HIIT, strength training. A separate Daily Living protocol covered rest, desk work, meal prep, and walking at roughly 20 minutes each.
+
+Enrollment reached 1,460 across five sites in California, Texas, and Malaysia; 1,254 contributed at least one paired measurement. Of those, 59% came from third-party CRO sites, 20% were Fitzpatrick skin tone V or VI, 35% female, mean age 39 ± 12 years, mean BMI 26 ± 5.</p>
+    
+
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-try-devices">“Wrist-based devices studied included Apple Watch Series 12, Garmin Forerunner 970, Google…” · p. 3</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-try-oura">“The Oura Ring was not evaluated in strength training per the manufacturer&#39;s recommendatio…” · p. 3</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-try-protocol">“To ensure an adequate range of activities were conducted for generalizable conclusions, p…” · p. 3</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-try-sites">“The study was conducted at five sites: two near Apple&#39;s headquarters in Cupertino, Califo…” · p. 3</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-try-demo">“Among those, 59% were enrolled at the third-party CRO-managed sites, 20% had a Fitzpatric…” · p. 6</button> <span class="chip">Cited</span></p>
+    
+
+    
+
+    <template class="drawer-content">
+      
+      <h3>Claims in this scene</h3>
+      <ul class="claims">
+        
+        <li data-claim="c-try-devices" data-span="sp-003-0010">
+          <span>Devices studied were Apple Watch Series 12, Garmin Forerunner 970, Google Pixel Watch 4, Huawei Watch 5, Samsung Galaxy Watch 8, WHOOP 5, and Oura Ring 5 worn on an index finger, using each manufacturer&#39;s latest model available in July and August 2026.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Wrist-based devices studied included Apple Watch Series 12, Garmin Forerunner 970, Google Pixel Watch 4, Huawei Watch 5, Samsung Galaxy Watch 8, and WHOOP 5.”</p><footer>p. 3 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+        <li data-claim="c-try-oura" data-span="sp-003-0019">
+          <span>The Oura Ring was not evaluated in strength training, following the manufacturer&#39;s recommendation against wearing it during weightlifting.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“The Oura Ring was not evaluated in strength training per the manufacturer&#39;s recommendation to avoid wearing the ring during weightlifting&lt;sup 5&lt;/sup .”</p><footer>p. 3 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+        <li data-claim="c-try-protocol" data-span="sp-003-0015">
+          <span>Workout activities lasted 15 to 20 minutes each and included outdoor runs at various speeds, indoor interval treadmill runs, outdoor cycling, HIIT, and strength training; a Daily Living protocol covered rest, desk work, meal preparation, and walking for about 20 minutes each.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“To ensure an adequate range of activities were conducted for generalizable conclusions, participants completed outdoor runs at various speeds, indoor interval treadmill runs, outdoor cycling, high intensity interval training (HIIT), and strength training, with duration ranging from 15 to 20 minutes per exercise type.”</p><footer>p. 3 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+        <li data-claim="c-try-sites" data-span="sp-003-0022">
+          <span>The study ran at five sites — two near Cupertino plus San Diego, Austin, and Selangor, Malaysia — with Apple managing Cupertino and Austin and a third-party contract research organization managing San Diego and Selangor.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“The study was conducted at five sites: two near Apple&#39;s headquarters in Cupertino, California, plus sites in San Diego, California; Austin, Texas; and Selangor, Malaysia.”</p><footer>p. 3 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+        <li data-claim="c-try-demo" data-span="sp-006-0067">
+          <span>1,460 participants enrolled and 1,254 contributed at least one paired measurement; among those, 59% were enrolled at CRO-managed sites, 20% had Fitzpatrick skin tone V or VI, 35% were female, mean age was 39 ± 12 years, and mean BMI was 26 ± 5 kg/m2.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Among those, 59% were enrolled at the third-party CRO-managed sites, 20% had a Fitzpatrick skin tone of V or VI, 35% were female, mean age was 39 ± 12 years, and mean BMI was 26 ± 5 kg/m2.”</p><footer>p. 6 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+      </ul>
+      
+      
+    </template>
+  </section>
+  
+  <section class="scene tried" data-idx="8" data-id="tried-streams" data-role="tried" data-depth="deep" data-seconds="49" hidden tabindex="-1">
+    
+    
+    <p class="kick">What they tried</p>
+    <h1 class="headline">The hardest methodological choice was which data stream each device exposes, since manufacturers publish heart rate at different rates and fidelities</h1>
+    <p class="ana">Comparing two dashboards where one logs every event and the other emails you a daily digest — you have to decide what counts as the product&#39;s real output.</p>
+    
+
+    
+      <p class="prose">Three criteria governed stream selection: it had to be visible to the user in the product, it had to carry timestamps good enough for paired analysis, and when several options existed, the highest-frequency one was chosen to limit unknown vendor averaging.
+
+In practice that often meant piping Bluetooth Low Energy from the manufacturer&#39;s heart rate app into a logger on a separate iPhone, because not all vendors write high-fidelity data to HealthKit or allow export. For Apple Watch, an internal logger captured the single value published to the user every 5 seconds, since background HealthKit writes happen only every 30 seconds.
+
+Samsung&#39;s background export had no per-sample timestamps at all — only interval bounds, min, max, and one undocumented value — so that value was compared against the reference mean over the interval, the alignment that agreed best.</p>
+    
+
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-str-criteria">“Third, when multiple frequency options were available, the highest frequency source was s…” · p. 3</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-str-ble">“A Bluetooth Low Energy data stream (BLE) sent from the manufacturer&#39;s heart rate app to a…” · p. 4</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-str-apple">“This data is a single value (not an average) reported every 5 seconds — in watch face com…” · p. 4</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-str-samsung">“Data from Samsung Galaxy Watch 8 during daily activities (background) required different…” · p. 5</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-str-quality">“For reference devices, this required adequate coverage (reading for ≥90% of the full sess…” · p. 5</button> <span class="chip">Cited</span></p>
+    
+
+    
+
+    <template class="drawer-content">
+      
+      <h3>Claims in this scene</h3>
+      <ul class="claims">
+        
+        <li data-claim="c-str-criteria" data-span="sp-003-0031">
+          <span>Stream selection required user-visible data, timestamping adequate for paired analysis with the reference, and the highest available frequency to reduce the impact of undocumented manufacturer averaging.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Third, when multiple frequency options were available, the highest frequency source was selected to reduce ambiguity and impact of how each manufacturer may have chosen to introduce or omit any type of averaging.”</p><footer>p. 3 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+        <li data-claim="c-str-ble" data-span="sp-004-0035">
+          <span>A Bluetooth Low Energy stream from each manufacturer&#39;s heart rate app to a logging app on a separate iPhone was often used, because not all manufacturers write high-fidelity data to HealthKit or permit export from their companion apps.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“A Bluetooth Low Energy data stream (BLE) sent from the manufacturer&#39;s heart rate app to a data logging app on a separate iPhone was used in many instances because it uniquely met all criteria outlined above, as not all manufacturers write high-fidelity data to HealthKit, or permit such data to be exported from their companion apps.”</p><footer>p. 4 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+        <li data-claim="c-str-apple" data-span="sp-004-0038">
+          <span>For Apple Watch an internal logging app captured the same single, non-averaged value shown to users every 5 seconds, which was necessary because background data reaches HealthKit only every 30 seconds.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“This data is a single value (not an average) reported every 5 seconds — in watch face complications for background heart rate, and in the Workout app for workout activities.”</p><footer>p. 4 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+        <li data-claim="c-str-samsung" data-span="sp-005-0054">
+          <span>Samsung Galaxy Watch 8 background exports lacked per-sample timestamps, providing only interval start and end, minimum, maximum, and one undocumented heart rate value, which agreed best with the reference interval mean and was therefore compared against it.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Data from Samsung Galaxy Watch 8 during daily activities (background) required different handling, as the export did not provide corresponding timestamping, only providing start and end timestamps, minimum and maximum heart rate, and a single additional heart rate value whose derivation is not documented.”</p><footer>p. 5 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+        <li data-claim="c-str-quality" data-span="sp-005-0046">
+          <span>Programmatic quality checks required the reference strap to read for at least 90% of a full session and 70% within an activity, with no more than 5% of its measurements falling outside a valid heart rate band; test devices needed a heart rate stream free of extreme values, and any activity failing a check was excluded from that comparison.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“For reference devices, this required adequate coverage (reading for ≥90% of the full session and ≥70% within an activity) and validity (no more than 5% of measurements fell outside 30–220 bpm).”</p><footer>p. 5 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+      </ul>
+      
+      
+    </template>
+  </section>
+  
+  <section class="scene predict" data-idx="9" data-id="predict" data-role="predict" data-depth="brief" data-seconds="69" hidden tabindex="-1">
+    
+    
+    <p class="kick">Your prediction</p>
+    <h1 class="headline">Across 159 activity-by-measure comparisons, how often did a rival device win outright?</h1>
+    
+    
+
+    
+      <p class="prose">Every activity crossed with every error measure and every comparator device yields 159 head-to-head comparisons. Each one resolves into three possible verdicts at the 99% confidence level: Apple better, comparator better, or indeterminate.
+
+Before you look, place a bet. Competing wearables are mature products from serious engineering teams, and some activities — resting at a desk, steady walking — are easy for any PPG sensor.
+
+How many of the 159 comparisons came out statistically in favor of the comparison device?</p>
+      <fieldset class="predict" data-reveal="found" data-answer="0">
+        <legend class="visually-hidden">Of the 159 activity-by-measure comparisons, how many favored the comparison device at the 99% confidence level?</legend>
+        
+        <label class="opt"><input type="radio" name="pred-predict" value="0"> <span>2</span></label>
+        
+        <label class="opt"><input type="radio" name="pred-predict" value="1"> <span>18</span></label>
+        
+        <label class="opt"><input type="radio" name="pred-predict" value="2"> <span>41</span></label>
+        
+        <label class="opt"><input type="radio" name="pred-predict" value="3"> <span>about half</span></label>
+        
+      </fieldset>
+      <p class="predict-actions">
+        <button type="button" class="btn p lock" disabled>Lock it in →</button>
+        <button type="button" class="linkish skip">Skip prediction</button>
+      </p>
+      <p class="locked-note" hidden>Locked in. Next shows what the paper found.</p>
+    
+
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-pred-count">“Across all individual activities spanning both the Workout and Daily Living protocols, th…” · p. 8</button> <span class="chip">Cited</span></p>
+    
+
+    
+
+    <template class="drawer-content">
+      
+      <h3>Claims in this scene</h3>
+      <ul class="claims">
+        
+        <li data-claim="c-pred-count" data-span="sp-008-0085">
+          <span>Across all individual activities in both protocols there were 159 activity-by-measure comparisons.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Across all individual activities spanning both the Workout and Daily Living protocols, there were 159 activityby-measure comparisons.”</p><footer>p. 8 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+      </ul>
+      
+      
+    </template>
+  </section>
+  
+  <section class="scene found" data-idx="10" data-id="found" data-role="found" data-depth="brief" data-seconds="31" data-reveal-note="Only 2 of the 159 comparisons favored a comparison device at the 99% level." hidden tabindex="-1">
+    
+    
+    <p class="kick">What they found</p>
+    <h1 class="headline">Apple Watch had lower error in 139 of 159 comparisons; 18 were indeterminate and only 2 favored a rival</h1>
+    
+    
+
+    
+      <div class="said" data-predict="predict" hidden></div>
+      
+      <blockquote class="rev" data-reveal-quote><p>“Apple Watch showed better accuracy with the 99% confidence level in 139, conclusions were indeterminate in 18, and the comparison device&#39;s accuracy was higher in 2.”</p><footer>p. 8 · Cited · the paper's own words</footer></blockquote>
+      
+      <p class="verd" data-verdict hidden></p>
+      <p class="prose">At the headline level, Apple Watch showed statistically significantly better accuracy than every other device for both the Overall Workout and Overall Daily Living protocols, on both RMSE and MAE.
+
+Drilling into the 159 activity-by-measure comparisons: 139 favored Apple Watch at 99% confidence, 18 were statistically indeterminate, and 2 favored the comparator. Ignoring significance entirely and just reading point estimates, 155 of 159 leaned Apple&#39;s way.
+
+For the session-average metric — the number screenless devices actually deliver — Apple Watch was better in 11 of 12 overall comparisons; the exception was Huawei Watch 5 in Overall Workout, where Apple was numerically better but not significantly so.</p>
+    
+
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-found-overall">“Apple Watch demonstrated a statistically significant higher level of accuracy versus all…” · p. 6</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-found-session">“Apple Watch also demonstrated better accuracy for session-level average heart rate for bo…” · p. 6</button> <span class="chip">Cited</span></p>
+    
+
+    
+
+    <template class="drawer-content">
+      
+      <h3>Claims in this scene</h3>
+      <ul class="claims">
+        
+        <li data-claim="c-found-tally" data-span="sp-008-0086">
+          <span>Of the 159 activity-by-measure comparisons, Apple Watch showed better accuracy at the 99% confidence level in 139, 18 were indeterminate, and the comparison device was more accurate in 2; by point estimate alone the comparison favored Apple Watch in 155 of 159.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Apple Watch showed better accuracy with the 99% confidence level in 139, conclusions were indeterminate in 18, and the comparison device&#39;s accuracy was higher in 2.”</p><footer>p. 8 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+        <li data-claim="c-found-overall" data-span="sp-006-0068">
+          <span>Apple Watch showed statistically significantly higher accuracy than all other devices for both Overall Workout and Overall Daily Living protocols on RMSE and MAE.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Apple Watch demonstrated a statistically significant higher level of accuracy versus all other devices for both Overall Workout and Overall Daily Living (background) protocol for RMSE and MAE.”</p><footer>p. 6 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+        <li data-claim="c-found-session" data-span="sp-006-0069">
+          <span>For session-level average heart rate, Apple Watch was more accurate in 11 of 12 overall comparisons, the exception being Huawei Watch 5 in Overall Workout where its numeric advantage was not statistically significant.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Apple Watch also demonstrated better accuracy for session-level average heart rate for both Overall Workout and Overall Daily Living, in 11 of 12 comparisons, with the exception of Huawei Watch 5 for Overall Workout, where Apple Watch showed better numeric accuracy that was not statistically significant.”</p><footer>p. 6 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+      </ul>
+      
+      
+    </template>
+  </section>
+  
+  <section class="scene found" data-idx="11" data-id="found-detail" data-role="found" data-depth="deep" data-seconds="39" hidden tabindex="-1">
+    
+    
+    <p class="kick">What they found</p>
+    <h1 class="headline">The only comparator wins were Pixel Watch 4 at rest, by under 0.5 bpm, while cycling versus Pixel Watch was the one indeterminate workout</h1>
+    <p class="ana">The two losses are rounding-error losses — like a competitor beating you on page-load time by three milliseconds.</p>
+    
+
+    
+      <p class="prose">Within workouts, Apple Watch was statistically better on RMSE and MAE for cycling, outdoor running, indoor interval running, HIIT, and strength training against every device, with one exception: cycling versus Pixel Watch 4, which was indeterminate.
+
+Within Daily Living, Apple Watch was better for nearly all devices and activities, with eight indeterminate conclusions concentrated in rest, desk work, and walking. Pixel Watch 4 beat Apple Watch on RMSE and MAE for rest only — by less than 0.5 bpm.
+
+The session-average metric was noisier: Apple led for most devices in most activities, but eight of those comparisons were indeterminate, which is what you expect when averaging over a session cancels much of the per-sample error.</p>
+    
+
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-det-workout">“Apple Watch also showed statistically better accuracy for all individual workout activiti…” · p. 7</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-det-session">“For session level averages, Apple Watch showed better accuracy for the majority of device…” · p. 7</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-det-daily">“Pixel Watch 4 showed higher accuracy for RMSE and MAE for the rest condition only, howeve…” · p. 8</button> <span class="chip">Cited</span></p>
+    
+
+    
+
+    <template class="drawer-content">
+      
+      <h3>Claims in this scene</h3>
+      <ul class="claims">
+        
+        <li data-claim="c-det-workout" data-span="sp-007-0074">
+          <span>Apple Watch showed statistically better RMSE and MAE for every individual workout activity against every device, except versus Pixel Watch 4 in cycling, where conclusions were indeterminate.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Apple Watch also showed statistically better accuracy for all individual workout activities (cycling, outdoor run, indoor interval run, HIIT, strength training) for all devices in RMSE and MAE, except versus Pixel Watch 4 in cycling, where the conclusions were indeterminate.”</p><footer>p. 7 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+        <li data-claim="c-det-session" data-span="sp-007-0075">
+          <span>For session-level averages within individual activities, Apple Watch was more accurate for most devices in most activities, but eight comparisons were indeterminate.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“For session level averages, Apple Watch showed better accuracy for the majority of devices in most activities, however in eight of the comparisons the conclusion was indeterminate.”</p><footer>p. 7 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+        <li data-claim="c-det-daily" data-span="sp-008-0081">
+          <span>In individual Daily Living activities, eight conclusions were statistically indeterminate for rest, desk work, and walking, and Pixel Watch 4 was more accurate on RMSE and MAE for rest only, by less than 0.5 bpm.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Pixel Watch 4 showed higher accuracy for RMSE and MAE for the rest condition only, however by less than a margin of 0.5 bpm.”</p><footer>p. 8 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+      </ul>
+      
+      
+    </template>
+  </section>
+  
+  <section class="scene changed" data-idx="12" data-id="changed" data-role="changed" data-depth="brief" data-seconds="49" hidden tabindex="-1">
+    
+    
+    <p class="kick">What changed</p>
+    <h1 class="headline">The paper concludes Apple Watch is the most accurate of the wearables tested — a strong claim resting on a design the vendor itself specified and reviewed</h1>
+    <p class="ana">It&#39;s a founder publishing their own benchmark suite: the methodology can be genuinely rigorous and still be authored by the interested party.</p>
+    
+
+    
+      <p class="prose">The stated conclusion is direct: better heart rate accuracy than every comparator in a large, statistically powered study, and the most accurate heart rate sensing among devices evaluated.
+
+What makes it worth reading as methodology, not just marketing, is the pre-specified power analysis, the within-participant pairing, the 99% intervals adjusted for multiplicity, and the disclosure of awkward details — Samsung&#39;s untimestamped background stream, the handful of comparisons Apple did not win.
+
+The structural caveat is who ran it. The informed consent form and protocol were approved by multiple review boards within Apple, and Apple managed recruitment and execution at the two Cupertino sites plus Austin, while a third-party CRO ran San Diego and Selangor; those CRO sites accounted for 59% of analyzed participants. Independent replication, particularly of the stream-selection choices, is what would turn this from a credible vendor study into a settled result.</p>
+    
+
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-chg-conc">“Apple Watch offers users the most accurate heart rate sensing among the wearable devices…” · p. 9</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-chg-irb">“This ICF and protocol were approved by multiple review boards within Apple, which include…” · p. 3</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-chg-sites">“Apple managed recruitment and execution at the Cupertino and Austin sites, while a third-…” · p. 3</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-chg-exclusions">“Individuals were also excluded with device-site tattoos or large moles, which may interfe…” · p. 3</button> <span class="chip">Cited</span></p>
+    
+
+    
+
+    <template class="drawer-content">
+      
+      <h3>Claims in this scene</h3>
+      <ul class="claims">
+        
+        <li data-claim="c-chg-conc" data-span="sp-009-0089">
+          <span>The paper concludes that Apple Watch demonstrated better heart rate accuracy than all comparative devices and offers the most accurate heart rate sensing among the wearables evaluated.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Apple Watch offers users the most accurate heart rate sensing among the wearable devices evaluated in this study.”</p><footer>p. 9 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+        <li data-claim="c-chg-irb" data-span="sp-003-0021">
+          <span>The informed consent form and protocol were approved by multiple review boards within Apple, representing research ethics, safety, privacy, and data governance.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“This ICF and protocol were approved by multiple review boards within Apple, which included representation from groups focused on research ethics, safety, privacy, and data governance.”</p><footer>p. 3 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+        <li data-claim="c-chg-sites" data-span="sp-003-0023">
+          <span>Apple managed recruitment and execution at the Cupertino and Austin sites while a third-party CRO managed the San Diego and Selangor sites, and 59% of analyzed participants were enrolled at the CRO-managed sites.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Apple managed recruitment and execution at the Cupertino and Austin sites, while a third-party contract research organization (CRO) managed the San Diego and Selangor sites.”</p><footer>p. 3 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+        <li data-claim="c-chg-exclusions" data-span="sp-003-0027">
+          <span>Participants were excluded for factors including beta blocker use, contraindications to intense exercise, and device-site tattoos or large moles that may interfere with readings across manufacturers.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Individuals were also excluded with device-site tattoos or large moles, which may interfere with readings across manufacturers.”</p><footer>p. 3 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here.</p>
+          
+        </li>
+        
+      </ul>
+      
+      
+    </template>
+  </section>
+  
+
+  <!-- Closing scene -->
+  <section class="scene close" data-idx="13" data-role="close" data-depth="brief" hidden tabindex="-1">
+    <p class="kick">Close</p>
+    <h1 class="headline">What you take with you</h1>
+    <div class="closing">
+      <h3>Your prediction</h3>
+      <p id="close-prediction">You did not make a prediction.</p>
+      <h3>The paper's finding</h3><blockquote class="quote"><p>“Apple Watch showed better accuracy with the 99% confidence level in 139, conclusions were indeterminate in 18, and the comparison device&#39;s accuracy was higher in 2.”</p><footer>p. 8</footer></blockquote>
+      
+      <h3>You now have</h3>
+      <ul class="concepts"><li><b>PPG motion artifact and cadence lock</b> — Optical heart rate sensors can track rhythmic body motion instead of blood flow, especially when step rate approaches heart rate.</li><li><b>Paired head-to-head design against a reference standard</b> — Wearing both devices and an ECG reference simultaneously turns a device comparison into a within-person paired measurement.</li><li><b>RMSE versus MAE</b> — MAE measures typical error while RMSE, by squaring first, exposes streams with rare but large errors.</li><li><b>Random intercept for repeated measures</b> — A per-participant random intercept keeps one person&#39;s many sessions from being counted as independent evidence.</li><li><b>User-facing data stream selection</b> — Benchmarking wearables forces a choice about which of each vendor&#39;s differently sampled, differently averaged outputs counts as the product.</li></ul>
+      
+      <h3>The paper</h3>
+      <p class="cite">Apple. Heart Rate Accuracy Study 2026. Heart Rate Accuracy. 2026.</p>
+      <p class="share-note">Made with learningtool. Not affiliated with or endorsed by the authors or publisher. Quotes are the paper's words; the interactive models are illustrative, not the study's measurements.</p>
+    </div>
+    <p><button type="button" class="btn" id="restart">Back to start</button></p>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="dial small" role="radiogroup" aria-label="Depth">
+    <label><input type="radio" name="depth-foot" value="brief"> brief</label><label><input type="radio" name="depth-foot" value="standard" checked> standard</label><label><input type="radio" name="depth-foot" value="deep"> deep</label>
+  </div>
+  <div>
+    <button type="button" class="btn" id="back">← Back</button>
+    <button type="button" class="btn p" id="next">Next →</button>
+  </div>
+</footer>
+
+<dialog id="drawer" aria-label="The paper's words"><div class="drawer-inner"><button type="button" class="close-drawer linkish" aria-label="Close">Close</button><div id="drawer-body"></div></div></dialog>
+<dialog id="scene-menu" aria-label="Scenes"><ol id="menu-list"></ol><button type="button" class="linkish close-menu">Close</button></dialog>
+<div class="visually-hidden" aria-live="polite" id="announce"></div>
+
+<script>window.TEMPLATES = window.TEMPLATES || {};
+window.TEMPLATES["before-after-groups"] = ((manifest) => {
+// Before/after, two groups. Baseline is fixed; the params are the changes.
+//   treated_after = baseline + treatment_effect
+//   control_after = baseline + control_drift
+//   difference    = treatment_effect - control_drift
+// Illustrative only: bars show the shape of a two-group comparison, not the study's values.
+
+const BASELINE = 0.5;
+function model(params) {
+  const t = BASELINE + Number(params.treatment_effect);
+  const c = BASELINE + Number(params.control_drift);
+  return { treated_after: t, control_after: c, difference: t - c };
+}
+function curve(params) {
+  const m = model(params);
+  return [BASELINE, m.treated_after, BASELINE, m.control_after];
+}
+function draw(ctx, params, w, h, opts) {
+  const pad = { l: 44, r: 16, t: 20, b: 34 };
+  const bars = curve(params);
+  const labels = ["treated · before", "treated · after", "control · before", "control · after"];
+  const colors = ["#D9D2C5", "#1F1D1A", "#D9D2C5", "#5B5F66"];
+  const maxV = 1.1;
+  const y = (v) => pad.t + (1 - Math.max(0, v) / maxV) * (h - pad.t - pad.b);
+  const slot = (w - pad.l - pad.r) / 4;
+  ctx.clearRect(0, 0, w, h);
+  ctx.font = "13px Inter, system-ui, sans-serif";
+  ctx.strokeStyle = "#D9D2C5"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, h - pad.b); ctx.lineTo(w - pad.r, h - pad.b); ctx.stroke();
+  bars.forEach((v, i) => {
+    const x0 = pad.l + i * slot + slot * 0.2;
+    ctx.fillStyle = colors[i];
+    ctx.fillRect(x0, y(v), slot * 0.6, h - pad.b - y(v));
+    ctx.fillStyle = "#5B5F66";
+    ctx.fillText(labels[i], x0 - 4, h - 12);
+  });
+  if (opts && opts.start) {
+    const s = model(opts.start);
+    ctx.strokeStyle = "#B5502F"; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(pad.l, y(s.treated_after)); ctx.lineTo(w - pad.r, y(s.treated_after)); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = "#B5502F"; ctx.fillText("starting value", w - pad.r - 90, y(s.treated_after) - 6);
+  }
+}
+
+return {model, curve, draw, manifest};
+})({
+  "id": "before-after-groups",
+  "name": "Before and after, two groups",
+  "description": "A treated group and a control group each measured before and after. Shows how the difference between groups depends on the treatment effect and any drift in the controls. For studies that compared two groups at two time points; never implies a dose-response curve.",
+  "mechanism_keywords": ["control group", "sham", "placebo", "pre", "post", "before", "after", "compared with"],
+  "params": {
+    "treatment_effect": {"lo": -0.2, "hi": 0.6, "default": 0.25, "unit": "", "label": "Change in the treated group"},
+    "control_drift": {"lo": -0.2, "hi": 0.3, "default": 0.03, "unit": "", "label": "Change in the control group"}
+  },
+  "defaults": {"treatment_effect": 0.25, "control_drift": 0.03},
+  "units": {"treatment_effect": "", "control_drift": ""},
+  "outputs": ["treated_after", "control_after", "difference"],
+  "output_labels": {"treated_after": "treated group, after", "control_after": "control group, after", "difference": "difference between groups"},
+  "axes": {"x": "group", "y": "score (normalized)"}
+}
+);
+window.TEMPLATES["threshold-learning-curve"] = ((manifest) => {
+// Threshold-gated learning curve.
+//
+//   power(0) = baseline
+//   each session: forgetting pulls power toward baseline (more between-session
+//   days -> more forgetting), then reward-gated learning pushes it up in
+//   proportion to how likely the signal is to beat the threshold.
+//
+//   reward_prob = sigmoid((power - threshold) / k)
+//   power <- baseline + (power - baseline) * decay      decay = exp(-0.08 * 7 / sessions_per_week)
+//   power <- power + rate * reward_prob * (1 - power)
+//
+// Illustrative only. The math is owned here; the lesson only supplies params.
+// `manifest` is injected by the page bundle (window.TEMPLATES) and is also
+// importable by the node test runner, which passes params directly.
+
+const BASELINE = 0.35;
+const RATE = 0.25;
+const K = 0.15;
+
+function simulate(params) {
+  const sessions = 20;
+  const threshold = Number(params.threshold);
+  const perWeek = Math.min(7, Math.max(1, Number(params.sessions_per_week)));
+  const decay = Math.exp(-0.08 * (7 / perWeek));
+  let power = BASELINE;
+  const ys = [power];
+  let firstReward = null;
+  for (let s = 1; s <= sessions; s++) {
+    const rewardProb = 1 / (1 + Math.exp(-(power - threshold) / K));
+    if (firstReward === null && rewardProb > 0.5) firstReward = s;
+    power = BASELINE + (power - BASELINE) * decay;
+    power = power + RATE * rewardProb * (1 - power);
+    ys.push(power);
+  }
+  return { ys, final_power: power, sessions_to_reward: firstReward === null ? sessions + 1 : firstReward };
+}
+function model(params) {
+  const r = simulate(params);
+  return { final_power: r.final_power, sessions_to_reward: r.sessions_to_reward };
+}
+function curve(params, xs) {
+  const r = simulate(params);
+  return (xs || r.ys.map((_, i) => i)).map((x) => r.ys[Math.min(r.ys.length - 1, Math.max(0, Math.round(x)))]);
+}
+function draw(ctx, params, w, h, opts) {
+  const pad = { l: 44, r: 16, t: 20, b: 34 };
+  const ys = curve(params);
+  const startYs = opts && opts.start ? curve(opts.start) : null;
+  const n = ys.length - 1;
+  const x = (i) => pad.l + (i / n) * (w - pad.l - pad.r);
+  const y = (v) => pad.t + (1 - v) * (h - pad.t - pad.b);
+  ctx.clearRect(0, 0, w, h);
+  ctx.font = "13px Inter, system-ui, sans-serif";
+  ctx.fillStyle = "#5B5F66";
+  ctx.strokeStyle = "#D9D2C5";
+  ctx.lineWidth = 1;
+  // axes
+  ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, h - pad.b); ctx.lineTo(w - pad.r, h - pad.b); ctx.stroke();
+  ctx.fillText("session 1", pad.l, h - 12);
+  ctx.fillText("session " + n, w - pad.r - 64, h - 12);
+  ctx.save(); ctx.translate(12, h / 2); ctx.rotate(-Math.PI / 2); ctx.fillText("signal power", -40, 0); ctx.restore();
+  // threshold line
+  ctx.setLineDash([4, 4]); ctx.strokeStyle = "#B5502F";
+  ctx.beginPath(); ctx.moveTo(pad.l, y(Number(params.threshold))); ctx.lineTo(w - pad.r, y(Number(params.threshold))); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = "#B5502F"; ctx.fillText("reward threshold", w - pad.r - 110, y(Number(params.threshold)) - 6);
+  // starting curve (faint) then current
+  if (startYs) {
+    ctx.strokeStyle = "#D9D2C5"; ctx.lineWidth = 2; ctx.beginPath();
+    startYs.forEach((v, i) => (i ? ctx.lineTo(x(i), y(v)) : ctx.moveTo(x(i), y(v)))); ctx.stroke();
+  }
+  ctx.strokeStyle = "#1F1D1A"; ctx.lineWidth = 2; ctx.beginPath();
+  ys.forEach((v, i) => (i ? ctx.lineTo(x(i), y(v)) : ctx.moveTo(x(i), y(v)))); ctx.stroke();
+}
+
+return {model, curve, draw, manifest};
+})({
+  "id": "threshold-learning-curve",
+  "name": "Threshold-gated learning curve",
+  "description": "A signal is rewarded only when it crosses a threshold; the curve shows how the signal grows across sessions. Models reward-gated learning (neurofeedback, operant conditioning, gated practice). Illustrative: shapes and rates are generic, never fitted to a study's data.",
+  "mechanism_keywords": ["threshold", "feedback", "reward", "training", "sessions", "neurofeedback"],
+  "params": {
+    "threshold": {"lo": 0.1, "hi": 1.0, "default": 0.55, "unit": "", "label": "Reward threshold"},
+    "sessions_per_week": {"lo": 1, "hi": 7, "default": 3, "step": 1, "unit": "/wk", "label": "Sessions per week"}
+  },
+  "defaults": {"threshold": 0.55, "sessions_per_week": 3},
+  "units": {"threshold": "", "sessions_per_week": "/wk"},
+  "outputs": ["final_power", "sessions_to_reward"],
+  "output_labels": {"final_power": "final alpha power (normalized)", "sessions_to_reward": "sessions until reward"},
+  "axes": {"x": "session", "y": "signal power (normalized)"},
+  "sessions": 20
+}
+);</script>
+<script>/* learningtool lesson player.
+   Every scene is server-rendered; this script only navigates, filters by depth,
+   records predictions (localStorage, never the repo), opens the evidence drawer,
+   and mounts widgets from window.TEMPLATES. No network. */
+(() => {
+  "use strict";
+  const DEPTHS = ["brief", "standard", "deep"];
+  const body = document.body;
+  const scenes = Array.from(document.querySelectorAll("section.scene"));
+  const arcItems = Array.from(document.querySelectorAll("#arc li"));
+  const announce = document.getElementById("announce");
+  const counter = document.getElementById("counter");
+  const storeKey = `learningtool:${body.dataset.paper}:${body.dataset.profile}`;
+
+  // ---- storage (private mode degrades to in-memory) -------------------------
+  let mem = {};
+  const store = {
+    get() { try { return JSON.parse(localStorage.getItem(storeKey) || "{}"); } catch { return mem; } },
+    set(v) { mem = v; try { localStorage.setItem(storeKey, JSON.stringify(v)); } catch { /* private mode */ } },
+  };
+  const state = Object.assign({ predictions: {}, depth: null, idx: 0 }, store.get());
+  if (!DEPTHS.includes(state.depth)) state.depth = body.dataset.defaultDepth || "standard";
+
+  // ---- depth ----------------------------------------------------------------
+  const depthRank = (d) => DEPTHS.indexOf(d);
+  const visible = () => scenes.filter((s) => depthRank(s.dataset.depth) <= depthRank(state.depth));
+  const isVisible = (s) => depthRank(s.dataset.depth) <= depthRank(state.depth);
+
+  function setDepth(d, fromUser) {
+    const current = scenes[state.idx];
+    state.depth = d;
+    document.querySelectorAll('input[name="depth"], input[name="depth-foot"]').forEach((r) => { r.checked = r.value === d; });
+    arcItems.forEach((li) => li.classList.toggle("hidden-depth", depthRank(li.dataset.depth) > depthRank(d)));
+    if (!isVisible(current)) {
+      // land on the nearest earlier visible scene and say so
+      let j = state.idx;
+      while (j > 0 && !isVisible(scenes[j])) j--;
+      show(j, { announceText: `Depth set to ${d}; moved to “${headingOf(scenes[j])}”.` });
+    } else {
+      updateChrome();
+      if (fromUser) say(`Depth set to ${d}: ${visible().length} scenes.`);
+    }
+    store.set(state);
+  }
+
+  // ---- navigation -------------------------------------------------------------
+  function headingOf(s) { const h = s.querySelector("h1"); return h ? h.textContent.trim() : ""; }
+
+  function show(idx, opts = {}) {
+    const target = scenes[idx];
+    if (!target || !isVisible(target)) return;
+    scenes.forEach((s) => { s.hidden = s !== target; s.classList.remove("enter"); });
+    target.classList.add("enter");
+    state.idx = idx;
+    store.set(state);
+    location.hash = `#s${idx}`;
+    mountReveal(target);
+    mountClose(target);
+    updateChrome();
+    target.focus({ preventScroll: false });
+    window.scrollTo({ top: 0 });
+    say(opts.announceText || `${headingOf(target)}. Scene ${positionOf(idx)} of ${visible().length}.`);
+  }
+
+  function positionOf(idx) { return visible().indexOf(scenes[idx]) + 1; }
+
+  function updateChrome() {
+    const vis = visible();
+    const pos = positionOf(state.idx);
+    const secondsLeft = vis.slice(pos).reduce((a, s) => a + (Number(s.dataset.seconds) || 0), 0);
+    counter.textContent = `scene ${pos} of ${vis.length}` + (secondsLeft ? ` · ~${Math.max(1, Math.round(secondsLeft / 60))} min left` : "");
+    arcItems.forEach((li) => {
+      const i = Number(li.dataset.idx);
+      li.classList.toggle("cur", i === state.idx);
+      li.classList.toggle("done", i < state.idx);
+      li.querySelector("button").setAttribute("aria-current", i === state.idx ? "true" : "false");
+    });
+    // Overflow rule: past 8 visible dots, label only first, previous, current, next, last.
+    const visLis = arcItems.filter((li) => !li.classList.contains("hidden-depth"));
+    const k = visLis.findIndex((li) => Number(li.dataset.idx) === state.idx);
+    visLis.forEach((li, j) => {
+      const near = j === 0 || j === visLis.length - 1 || Math.abs(j - k) <= 1;
+      li.classList.toggle("near", near);
+      li.classList.toggle("nolabel", visLis.length > 8 && !near);
+    });
+    const back = document.getElementById("back"), next = document.getElementById("next");
+    const narrow = window.matchMedia("(max-width: 767px)").matches;
+    back.disabled = pos <= 1;
+    const current = scenes[state.idx];
+    if (current.dataset.role === "predict") {
+      const locked = !!state.predictions[current.dataset.id];
+      next.disabled = !locked;
+      next.textContent = narrow ? "Next →" : locked ? "Next: what they found →" : "Lock in a prediction to continue";
+    } else {
+      next.disabled = pos >= vis.length;
+      const nxt = vis[pos];
+      next.textContent = narrow || !nxt ? "Next →" : `Next: ${nxt.querySelector(".kick")?.textContent.trim().toLowerCase() || "scene"} →`;
+    }
+    document.querySelectorAll(".foot").forEach((f) => { f.hidden = current.dataset.role === "title"; });
+  }
+
+  function step(delta) {
+    const vis = visible();
+    const j = vis.indexOf(scenes[state.idx]) + delta;
+    if (j < 0 || j >= vis.length) return;
+    show(scenes.indexOf(vis[j]));
+  }
+
+  // ---- predictions ------------------------------------------------------------
+  scenes.filter((s) => s.dataset.role === "predict").forEach((s) => {
+    const fs = s.querySelector(".predict"), lock = s.querySelector(".lock"), skip = s.querySelector(".skip"), note = s.querySelector(".locked-note");
+    const radios = Array.from(fs.querySelectorAll("input[type=radio]"));
+    const applyLocked = () => {
+      const p = state.predictions[s.dataset.id];
+      if (!p) return;
+      fs.classList.add("locked");
+      radios.forEach((r) => { r.disabled = true; r.checked = p.choice !== null && Number(r.value) === p.choice; });
+      lock.disabled = true; skip.hidden = true; note.hidden = false;
+      note.textContent = p.choice === null ? "You skipped the prediction. Next shows what the paper found." : "Locked in. Next shows what the paper found.";
+    };
+    radios.forEach((r) => r.addEventListener("change", () => { lock.disabled = false; }));
+    lock.addEventListener("click", () => {
+      const chosen = radios.find((r) => r.checked);
+      if (!chosen) return;
+      state.predictions[s.dataset.id] = { choice: Number(chosen.value), text: chosen.parentElement.textContent.trim() };
+      store.set(state); applyLocked(); updateChrome();
+    });
+    skip.addEventListener("click", () => {
+      state.predictions[s.dataset.id] = { choice: null, text: null };
+      store.set(state); applyLocked(); updateChrome();
+    });
+    fs.addEventListener("keydown", (e) => { if (e.key === "Enter" && !lock.disabled) lock.click(); });
+    applyLocked();
+  });
+
+  function mountReveal(scene) {
+    if (scene.dataset.role !== "found") return;
+    const said = scene.querySelector(".said"); if (!said) return;
+    const predictId = said.dataset.predict;
+    const p = state.predictions[predictId];
+    const verdict = scene.querySelector("[data-verdict]");
+    const quote = scene.querySelector("[data-reveal-quote]");
+    const predictScene = scenes.find((s) => s.dataset.id === predictId);
+    const answerIndex = predictScene ? Number(predictScene.querySelector(".predict").dataset.answer ?? "NaN") : NaN;
+    const note = scene.dataset.revealNote || "";
+    said.hidden = false;
+    if (!p) { said.textContent = "You have not made a prediction yet."; }
+    else if (p.choice === null) { said.textContent = "You skipped the prediction."; }
+    else { said.textContent = `You said: ${p.text}`; }
+    if (quote) requestAnimationFrame(() => quote.classList.add("in"));
+    verdict.hidden = false;
+    if (p && p.choice !== null && Number.isFinite(answerIndex)) {
+      verdict.textContent = p.choice === answerIndex ? "That's what they found." : `Close. The paper found: ${note || headingOf(scene).toLowerCase()}.`;
+    } else if (note) {
+      verdict.textContent = note;
+    } else { verdict.hidden = true; }
+  }
+
+  function mountClose(scene) {
+    if (scene.dataset.role !== "close") return;
+    const el = document.getElementById("close-prediction");
+    const entries = Object.values(state.predictions);
+    if (!entries.length) el.textContent = "You did not make a prediction.";
+    else if (entries[0].choice === null) el.textContent = "You skipped the prediction.";
+    else el.textContent = `You said: ${entries[0].text}`;
+  }
+
+  // ---- evidence drawer --------------------------------------------------------
+  const drawer = document.getElementById("drawer"), drawerBody = document.getElementById("drawer-body");
+  function openDrawer(scene, focusClaim, focusSpan) {
+    const tpl = scene.querySelector("template.drawer-content");
+    drawerBody.innerHTML = "";
+    if (tpl) drawerBody.appendChild(tpl.content.cloneNode(true));
+    drawerBody.querySelectorAll("li[data-claim]").forEach((li) => {
+      const hit = (focusClaim && li.dataset.claim === focusClaim) || (focusSpan && li.dataset.span === focusSpan);
+      li.classList.toggle("active", !!hit);
+    });
+    drawerBody.querySelectorAll(".zoom").forEach((b) => b.addEventListener("click", () => b.closest(".crop").classList.toggle("zoomed")));
+    if (typeof drawer.showModal === "function") drawer.showModal(); else drawer.setAttribute("open", "");
+    const active = drawerBody.querySelector("li.active"); if (active) active.scrollIntoView({ block: "start" });
+  }
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest(".open-drawer"); if (!b) return;
+    openDrawer(b.closest("section.scene"), b.dataset.claim, b.dataset.span);
+  });
+  document.querySelector(".close-drawer").addEventListener("click", () => drawer.close());
+  drawer.addEventListener("click", (e) => { if (e.target === drawer) drawer.close(); });
+
+  // ---- scene menu (phone) -----------------------------------------------------
+  const menu = document.getElementById("scene-menu"), menuList = document.getElementById("menu-list");
+  document.getElementById("menu").addEventListener("click", () => {
+    menuList.innerHTML = "";
+    visible().forEach((s) => {
+      const li = document.createElement("li"), b = document.createElement("button");
+      b.type = "button"; b.className = "linkish"; b.textContent = headingOf(s);
+      b.addEventListener("click", () => { menu.close(); show(scenes.indexOf(s)); });
+      li.appendChild(b); menuList.appendChild(li);
+    });
+    menu.showModal();
+  });
+  document.querySelector(".close-menu").addEventListener("click", () => menu.close());
+
+  // ---- widgets ------------------------------------------------------------------
+  document.querySelectorAll(".widget").forEach((w) => {
+    const cfg = JSON.parse(w.dataset.config);
+    const tpl = (window.TEMPLATES || {})[w.dataset.template];
+    const canvas = w.querySelector("canvas"), sliders = w.querySelector(".sliders"), readout = w.querySelector(".readout");
+    if (!tpl) { canvas.hidden = true; w.querySelector(".unavailable").hidden = false; sliders.hidden = true; w.querySelector(".read").hidden = true; return; }
+    const params = Object.assign({}, tpl.manifest.defaults || {}, cfg.params);
+    const start = Object.assign({}, params);
+    const inputs = {};
+    Object.entries(cfg.ranges).forEach(([name, [lo, hi]]) => {
+      const id = `${w.dataset.widget}-${name}`;
+      const label = document.createElement("label"); label.htmlFor = id;
+      const val = document.createElement("span"); val.className = "val";
+      label.append(document.createTextNode(cfg.labels[name] || name), val);
+      const spec = (tpl.manifest.params || {})[name] || {};
+      const input = document.createElement("input");
+      input.type = "range"; input.id = id; input.min = lo; input.max = hi; input.step = spec.step || (hi - lo) / 100; input.value = params[name];
+      const nudge = document.createElement("div"); nudge.className = "nudge"; nudge.textContent = cfg.nudges[name] || "";
+      const wrap = document.createElement("div"); wrap.append(label, input, nudge); sliders.appendChild(wrap);
+      inputs[name] = { input, val };
+    });
+    const draw = () => {
+      Object.entries(inputs).forEach(([n, { input, val }]) => { params[n] = Number(input.value); val.textContent = fmt(params[n], tpl.manifest.units && tpl.manifest.units[n]); });
+      const out = tpl.model(params), startOut = tpl.model(start);
+      const k = cfg.readout;
+      readout.innerHTML = `${(tpl.manifest.output_labels || {})[k] || k}: ${fmt(startOut[k])} → <b>${fmt(out[k])}</b>`;
+      const ctx = canvas.getContext("2d"); ctx.clearRect(0, 0, canvas.width, canvas.height);
+      tpl.draw(ctx, params, canvas.width, canvas.height, { start });
+    };
+    Object.values(inputs).forEach(({ input }) => input.addEventListener("input", draw));
+    w.querySelector(".reset").addEventListener("click", () => { Object.entries(inputs).forEach(([n, { input }]) => { input.value = start[n]; }); draw(); });
+    draw();
+  });
+  function fmt(v, unit) { const s = Number.isInteger(v) ? String(v) : Math.abs(v) >= 100 ? v.toFixed(0) : Math.abs(v) >= 10 ? v.toFixed(1) : v.toFixed(2); return unit ? `${s} ${unit}` : s; }
+
+  // ---- wiring -----------------------------------------------------------------
+  document.getElementById("start").addEventListener("click", () => step(1));
+  document.getElementById("restart").addEventListener("click", () => show(0));
+  document.getElementById("back").addEventListener("click", () => step(-1));
+  document.getElementById("next").addEventListener("click", () => step(1));
+  arcItems.forEach((li) => li.querySelector("button").addEventListener("click", () => show(Number(li.dataset.idx))));
+  document.querySelectorAll('input[name="depth"], input[name="depth-foot"]').forEach((r) => r.addEventListener("change", () => setDepth(r.value, true)));
+  document.addEventListener("keydown", (e) => {
+    if (e.target.matches("input, textarea") || drawer.open || menu.open) return;
+    if (e.key === "ArrowRight") { e.preventDefault(); if (!document.getElementById("next").disabled) step(1); }
+    if (e.key === "ArrowLeft") { e.preventDefault(); step(-1); }
+  });
+  function say(t) { announce.textContent = ""; setTimeout(() => { announce.textContent = t; }, 30); }
+
+  // ---- boot -------------------------------------------------------------------
+  scenes.forEach((s) => { const sec = s.dataset.seconds; if (sec === undefined) s.dataset.seconds = "0"; });
+  setDepth(state.depth, false);
+  const fromHash = Number((location.hash.match(/^#s(\d+)$/) || [])[1]);
+  show(Number.isFinite(fromHash) && scenes[fromHash] && isVisible(scenes[fromHash]) ? fromHash : (isVisible(scenes[state.idx]) ? state.idx : 0));
+})();
+</script>
+</body>
+</html>

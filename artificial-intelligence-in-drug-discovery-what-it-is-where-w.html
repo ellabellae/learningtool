@@ -1,0 +1,1463 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Artificial intelligence in drug discovery — what it is, where we stand and the path forward · learningtool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>:root{
+  --paper:#F7F3EC;--ink:#1F1D1A;--slate:#5B5F66;--terracotta:#B5502F;--amber:#B8860B;--amber-bg:#FFF4D6;--hairline:#D9D2C5;
+  --serif:"Instrument Serif",Georgia,"Times New Roman",serif;--sans:Inter,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;--mono:ui-monospace,Menlo,Consolas,monospace;
+  --u:8px;--measure:68ch;
+}
+*{box-sizing:border-box}
+html{color-scheme:light}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:18px;line-height:1.55}
+::selection{background:var(--terracotta);color:#fff}
+:focus-visible{outline:2px solid var(--terracotta);outline-offset:2px}
+a{color:var(--ink);text-decoration-color:var(--hairline);text-underline-offset:3px}a:visited{color:var(--slate)}
+h1,h3{font-weight:400}
+.visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+[hidden]{display:none!important}
+
+.banner{background:var(--amber-bg);border-bottom:1px solid var(--amber);color:#5a4400;padding:calc(var(--u)) calc(4*var(--u));font-size:16px}
+
+/* Top bar and arc */
+.top{position:sticky;top:0;z-index:5;display:flex;align-items:flex-start;gap:calc(3*var(--u));padding:calc(1.5*var(--u)) calc(4*var(--u));border-bottom:1px solid var(--hairline);background:var(--paper);font-size:16px}
+.mark{color:var(--slate);white-space:nowrap;padding-top:2px}
+.arc{flex:1;min-width:0}
+.arc ol{list-style:none;margin:0;padding:0;display:flex}
+.arc li{position:relative;flex:1;min-width:72px}
+@media (max-width:1399px){.ptitle{display:none}}
+.arc li::before{content:"";position:absolute;top:8px;left:50%;width:100%;height:1px;background:var(--hairline)}
+.arc li:last-child::before{display:none}
+.arc button{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;width:100%;background:none;border:0;padding:0;font:inherit;color:var(--slate);cursor:pointer;min-height:44px}
+.arc i{width:14px;height:14px;border-radius:50%;border:1px solid var(--slate);background:var(--paper);display:block;margin-top:1px}
+.arc li.done i{background:var(--slate)}
+.arc li.cur i{background:var(--terracotta);border-color:var(--terracotta)}
+.arc li.flag i{box-shadow:0 0 0 2px var(--paper),0 0 0 4px var(--amber)}
+.arc span{margin-top:6px;text-align:center;font-size:16px;line-height:1.2;padding:0 2px}
+.arc li.pre span{font-style:italic}
+.arc li.hidden-depth{display:none}
+.arc li.nolabel span{visibility:hidden}
+.arc li.nolabel button:hover span,.arc li.nolabel button:focus-visible span{visibility:visible}
+.ptitle{color:var(--slate);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:26ch;padding-top:2px}
+.counter{color:var(--slate);white-space:nowrap;padding-top:2px}
+.menu{display:none}
+
+/* Scene */
+main{max-width:var(--measure);margin:0 auto;padding:calc(6*var(--u)) calc(4*var(--u)) calc(15*var(--u))}
+.scene{outline:none}
+.scene.flagged{border-left:4px solid var(--amber);padding-left:calc(3*var(--u));margin-left:calc(-3*var(--u) - 4px)}
+.kick{font-size:16px;color:var(--slate);margin:0 0 var(--u)}
+.headline{font-family:var(--serif);font-size:28px;line-height:1.2;margin:0 0 var(--u)}
+.hook{font-family:var(--serif);font-size:40px;line-height:1.2;margin:0 0 calc(2*var(--u))}
+.ana{font-family:var(--serif);font-size:22px;color:var(--slate);margin:0 0 var(--u)}
+.tie{font-size:16px;color:var(--slate);margin:0 0 calc(3*var(--u))}
+.prose{margin:calc(2*var(--u)) 0 calc(2.5*var(--u))}
+.pmeta{color:var(--slate);margin:0 0 calc(4*var(--u))}.pmeta b{font-weight:500;color:var(--ink)}
+.dl{font-size:16px;color:var(--slate);margin:0 0 var(--u)}
+.share-note{font-size:16px;color:var(--slate);border-left:2px solid var(--hairline);padding-left:calc(1.5*var(--u));margin:0 0 calc(3*var(--u))}
+.strip{background:var(--amber-bg);border-left:4px solid var(--amber);color:#5a4400;padding:calc(1.25*var(--u)) calc(2*var(--u));font-size:16px;margin:0 0 calc(3*var(--u))}
+.src{font-size:16px;color:var(--slate);border-left:2px solid var(--hairline);padding-left:calc(1.5*var(--u));margin:calc(-1*var(--u)) 0 calc(3*var(--u))}
+.src .linkish{text-align:left}
+.chip{display:inline-block;font-size:16px;border:1px solid var(--hairline);border-radius:3px;padding:0 6px;margin-left:6px;white-space:nowrap}
+.removed{font-size:16px;color:var(--slate);border:1px dashed var(--hairline);padding:var(--u) calc(2*var(--u));margin:0 0 calc(3*var(--u))}
+.linkish{background:none;border:0;padding:0;font:inherit;color:inherit;text-decoration:underline;text-decoration-color:var(--hairline);text-underline-offset:3px;cursor:pointer}
+.btn{border:1px solid var(--ink);border-radius:4px;padding:10px 18px;background:#fff;font:inherit;font-size:16px;cursor:pointer;min-height:44px}
+.btn.p{background:var(--terracotta);color:#fff;border-color:var(--terracotta)}
+.btn[disabled]{opacity:.45;cursor:default}
+.dial{display:flex;flex-wrap:wrap;gap:var(--u);font-size:16px;margin:0 0 calc(3*var(--u))}
+.dial label{border:1px solid var(--slate);border-radius:14px;padding:5px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;min-height:34px}
+.dial label:has(input:checked){background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.dial input{position:absolute;opacity:0;width:1px;height:1px}
+.dial label:has(input:focus-visible){outline:2px solid var(--terracotta);outline-offset:2px}
+
+/* Widget */
+.widget{border:1px solid var(--hairline);border-radius:4px;padding:calc(2.5*var(--u));margin:var(--u) 0 calc(3*var(--u));background:#fff}
+.widget .q{margin:0 0 4px;font-weight:500}
+.widget .badge{font-size:16px;color:var(--slate);margin:0 0 calc(1.5*var(--u))}
+.widget .chart{position:relative;border-bottom:1px solid var(--hairline)}
+.widget canvas{width:100%;height:auto;display:block}
+.widget .unavailable{font-size:16px;color:var(--slate);padding:calc(2*var(--u)) 0}
+.sliders{display:grid;grid-template-columns:1fr 1fr;gap:calc(4*var(--u));margin-top:calc(1.75*var(--u));font-size:16px}
+.sliders label{display:block}
+.sliders .val{float:right;font-family:var(--mono)}
+.sliders input[type=range]{width:100%;accent-color:var(--terracotta);margin:var(--u) 0 4px;min-height:24px}
+.sliders .nudge{color:var(--slate);font-size:16px}
+.read{font-family:var(--mono);font-size:16px;margin:calc(1.5*var(--u)) 0 0}.read b{color:var(--terracotta);font-weight:500}
+.evidence{font-size:16px;color:var(--slate);border-left:2px solid var(--hairline);padding-left:calc(1.5*var(--u));margin:calc(2*var(--u)) 0 0}
+
+/* Prediction and reveal */
+.predict{border:0;padding:0;margin:0 0 calc(2*var(--u))}
+.opt{display:flex;gap:calc(1.5*var(--u));align-items:flex-start;border:1px solid var(--hairline);border-radius:4px;padding:calc(2*var(--u));margin:0 0 var(--u);background:#fff;cursor:pointer;min-height:44px}
+.opt:has(input:checked){border-color:var(--terracotta);box-shadow:inset 0 0 0 1px var(--terracotta)}
+.opt input{accent-color:var(--terracotta);margin-top:6px}
+.predict.locked .opt{cursor:default;opacity:.85}
+.predict-actions{display:flex;gap:calc(2*var(--u));align-items:center;flex-wrap:wrap}
+.locked-note{font-size:16px;color:var(--slate)}
+.said{font-size:16px;color:var(--slate);border:1px solid var(--hairline);padding:calc(1.25*var(--u)) calc(2*var(--u));margin:0 0 calc(2*var(--u))}
+.rev{font-family:var(--serif);font-size:22px;line-height:1.4;border-left:3px solid var(--terracotta);padding-left:calc(2*var(--u));margin:0 0 var(--u);opacity:0;transition:opacity 150ms ease-out}
+.rev.in{opacity:1}
+.rev footer{font-family:var(--sans);font-size:16px;color:var(--slate);margin-top:4px}
+.rev p{margin:0}
+.verd{margin:0 0 calc(3*var(--u))}
+
+/* Closing */
+.closing h3{font-size:16px;color:var(--slate);margin:calc(3*var(--u)) 0 var(--u)}
+.concepts{padding-left:1.2em}.concepts b{font-weight:500}
+.quote{font-family:var(--serif);font-size:22px;line-height:1.4;border-left:3px solid var(--ink);padding-left:calc(2*var(--u));margin:var(--u) 0}
+.quote p{margin:0}.quote footer{font-family:var(--sans);font-size:16px;color:var(--slate);margin-top:4px}
+.cite{color:var(--slate)}
+
+/* Footer */
+.foot{position:sticky;bottom:0;z-index:5;display:flex;justify-content:space-between;align-items:center;gap:calc(2*var(--u));padding:calc(1.5*var(--u)) calc(4*var(--u));border-top:1px solid var(--hairline);background:var(--paper);font-size:16px}
+.foot .dial{margin:0}
+.foot .btn{margin-left:var(--u)}
+
+/* Drawer */
+dialog{border:0;padding:0;background:transparent;max-width:none;max-height:none}
+dialog::backdrop{background:rgba(31,29,26,.18)}
+#drawer{position:fixed;inset:0 0 0 auto;width:420px;height:100%;margin:0}
+#drawer .drawer-inner{height:100%;overflow:auto;background:#fff;border-left:1px solid var(--hairline);box-shadow:0 8px 24px rgba(31,29,26,.12);padding:calc(3.5*var(--u));font-size:16px;transform:translateX(100%);transition:transform 200ms ease-out}
+#drawer[open] .drawer-inner{transform:none}
+#drawer h3{font-size:16px;color:var(--slate);margin:calc(2*var(--u)) 0 calc(1.5*var(--u))}
+#drawer .claims{list-style:none;padding:0;margin:0}
+#drawer .claims li{padding:var(--u) 0;border-top:1px solid var(--hairline)}
+#drawer .claims li.active{background:var(--paper);margin:0 calc(-1*var(--u));padding:var(--u)}
+#drawer .crop{margin:var(--u) 0 0}
+#drawer .crop img{max-width:100%;max-height:220px;object-fit:contain;border:1px solid var(--hairline);display:block}
+#drawer .crop.zoomed img{max-height:none;width:auto;max-width:none}
+#drawer .crop figcaption{font-size:16px;color:var(--slate)}
+#drawer .notshown{padding-left:1.2em;color:var(--slate)}
+.close-drawer{float:right}
+#scene-menu{margin:auto;background:#fff;border:1px solid var(--hairline);padding:calc(3*var(--u));width:min(90vw,420px)}
+#scene-menu ol{padding-left:1.4em}#scene-menu li{padding:4px 0}#scene-menu button{font-size:16px}
+
+/* Motion */
+.scene.enter{animation:fade 150ms ease-out}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){
+  .scene.enter{animation:none}.rev{transition:none}#drawer .drawer-inner{transition:none}
+}
+
+/* Tablet */
+@media (max-width:1023px){
+  .arc li:not(.cur):not(.near) span{visibility:hidden}
+  #drawer{inset:auto 0 0 0;width:100%;height:70vh}
+  #drawer .drawer-inner{border-left:0;border-top:1px solid var(--hairline);transform:translateY(100%)}
+  #drawer[open] .drawer-inner{transform:none}
+}
+/* Phone */
+@media (max-width:767px){
+  body{font-size:17px}
+  .top{padding:calc(1.5*var(--u)) calc(2*var(--u));align-items:center}
+  .arc,.ptitle{display:none}
+  .menu{display:inline-block;margin-left:auto}
+  .mark{display:none}
+  main{padding:calc(3*var(--u)) calc(2*var(--u)) calc(14*var(--u))}
+  .headline{font-size:26px}.hook{font-size:32px}
+  .sliders{grid-template-columns:1fr}
+  .foot{padding:calc(1.5*var(--u)) calc(2*var(--u))}
+  .foot .dial{flex-wrap:nowrap;gap:4px}
+  .foot .dial label{padding:5px 8px;min-height:40px}
+  .foot .btn{padding:10px 12px;margin-left:4px}
+  #drawer{height:100%}
+  .scene.flagged{margin-left:0;padding-left:calc(2*var(--u))}
+}
+</style>
+</head>
+<body data-paper="d4e1584ad36455246ea190a0c56413b947f194242450d6b9af21b8126a16034c" data-profile="Ella" data-default-depth="standard">
+
+
+
+<header class="top">
+  <span class="mark">learningtool · paper lesson</span>
+  <nav class="arc" aria-label="Lesson scenes">
+    <ol id="arc">
+      <li data-idx="0" data-depth="brief"><button type="button" aria-current="true"><i></i><span>Start</span></button></li>
+      
+      <li data-idx="1" data-depth="standard" class="pre"><button type="button"><i></i><span>Ligand versus drug</span></button></li>
+      
+      <li data-idx="2" data-depth="standard" class="pre"><button type="button"><i></i><span>Conditional biological…</span></button></li>
+      
+      <li data-idx="3" data-depth="deep" class="pre"><button type="button"><i></i><span>Use-case-dependent mode…</span></button></li>
+      
+      <li data-idx="4" data-depth="deep" class=""><button type="button"><i></i><span>The world before</span></button></li>
+      
+      <li data-idx="5" data-depth="brief" class=""><button type="button"><i></i><span>The problem</span></button></li>
+      
+      <li data-idx="6" data-depth="brief" class=""><button type="button"><i></i><span>What they tried</span></button></li>
+      
+      <li data-idx="7" data-depth="standard" class=""><button type="button"><i></i><span>What they tried</span></button></li>
+      
+      <li data-idx="8" data-depth="brief" class=""><button type="button"><i></i><span>Your prediction</span></button></li>
+      
+      <li data-idx="9" data-depth="brief" class=""><button type="button"><i></i><span>What they found</span></button></li>
+      
+      <li data-idx="10" data-depth="deep" class=""><button type="button"><i></i><span>What they found</span></button></li>
+      
+      <li data-idx="11" data-depth="deep" class=""><button type="button"><i></i><span>What they found</span></button></li>
+      
+      <li data-idx="12" data-depth="brief" class=""><button type="button"><i></i><span>What changed</span></button></li>
+      
+      <li data-idx="13" data-depth="deep" class=""><button type="button"><i></i><span>What changed</span></button></li>
+      
+      <li data-idx="14" data-depth="brief"><button type="button"><i></i><span>Close</span></button></li>
+    </ol>
+  </nav>
+  <span class="ptitle" title="Artificial intelligence in drug discovery — what it is, where we stand and the path forward">Artificial intelligence in drug discovery — what it is, whe…</span>
+  <span class="counter" id="counter" aria-live="polite"></span>
+  <button type="button" class="menu" id="menu" aria-haspopup="dialog">Scenes</button>
+</header>
+
+<main id="main">
+  <!-- Title scene -->
+  <section class="scene title" data-idx="0" data-role="title" data-depth="brief" tabindex="-1">
+    <p class="kick">A paper lesson</p>
+    <h1 class="hook">If AI can fold proteins and design molecules, why hasn&#39;t it produced a wave of new medicines?</h1>
+    <p class="pmeta"><b>Artificial intelligence in drug discovery — what it is, where we stand and the path forward</b><br>
+      Andreas Bender · Nature Reviews Drug Discovery, doi:10.1038/s41573-026-01496-2 · 22 pages</p>
+    <p class="dl"><a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Read the original paper</a></p>
+    <p class="share-note">An unofficial lesson generated from the paper above. Every quote is the paper's own sentence with its page number. Page images are omitted in this shared version because the source paper is copyrighted; the full tool shows the highlighted page beside every quote.</p>
+    <p class="dl">Depth</p>
+    <div class="dial" role="radiogroup" aria-label="Depth">
+      
+      <label><input type="radio" name="depth" value="brief"> brief · 7 scenes · 4 min</label>
+      
+      <label><input type="radio" name="depth" value="standard" checked> standard · 10 scenes · 6 min</label>
+      
+      <label><input type="radio" name="depth" value="deep"> deep · 15 scenes · 9 min</label>
+      
+    </div>
+    <p><button type="button" class="btn p" id="start">Start →</button></p>
+    
+    <p class="dl">First, 3 things the paper assumes: Ligand versus drug, Conditional biological…, Use-case-dependent mode…. Then the paper.</p>
+  </section>
+
+  
+  <section class="scene prereq" data-idx="1" data-id="prereq-ligand-drug" data-role="prereq" data-depth="standard" data-seconds="36" hidden tabindex="-1">
+    
+    
+    <p class="kick">Before the paper</p>
+    <h1 class="headline">A ligand binds a target; a drug must also survive a body and help a patient</h1>
+    <p class="ana">It&#39;s the difference between a prototype that works on the bench and a device that passes clinical trials, manufacturing, and reimbursement.</p>
+    
+
+    
+      <p class="prose">The paper insists on a distinction that press releases blur. A ligand binds to a protein, and its endpoints are biochemical: IC50, Ki, Kd. A drug must bind its target and also show acceptable efficacy and safety across preclinical and clinical endpoints.
+
+The gap is not cosmetic. A potent ligand can be toxic in vivo and therefore useless; a classic trap is affinity driven by lipophilicity, which wrecks solubility, bioavailability and metabolism.
+
+The numbers make the odds concrete: databases like ChEMBL and PubChem hold on the order of 10^6 bioactive ligands, while roughly 10^3 drugs are on the market.</p>
+    
+
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-lig-1">“A drug is expected to bind to and engage its target and additionally demonstrate acceptab…” · p. 4</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-lig-2">“A typical pitfall in this regard is affinity driven by lipophilicity, which often makes a…” · p. 4</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-lig-3">“The greater difficulty with identifying drugs compared to ligands is apparent in the numb…” · p. 4</button> <span class="chip">Cited</span></p>
+    
+
+    
+
+    <template class="drawer-content">
+      
+      <h3>Claims in this scene</h3>
+      <ul class="claims">
+        
+        <li data-claim="c-lig-1" data-span="sp-004-0086">
+          <span>A ligand binds a target and is scored by endpoints such as IC50, Ki and Kd, whereas a drug must additionally show acceptable efficacy and safety across preclinical and clinical endpoints.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“A drug is expected to bind to and engage its target and additionally demonstrate acceptable efficacy and safety as assessed by a range of preclinical and clinical end points.”</p><footer>p. 4 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+        <li data-claim="c-lig-2" data-span="sp-004-0084">
+          <span>A potent ligand can be toxic in vivo and hence useless as a drug; affinity driven by lipophilicity is a typical pitfall because of the associated pharmacokinetic properties.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“A typical pitfall in this regard is affinity driven by lipophilicity, which often makes a compound unsuitable to be used in vivo due to its associated pharmacokinetic (PK) properties, such as its solubility, bioavailability and metabolism.”</p><footer>p. 4 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+        <li data-claim="c-lig-3" data-span="sp-004-0088">
+          <span>There are on the order of 10^6 bioactive ligands in databases such as ChEMBL and PubChem but only on the order of 10^3 drugs on the market.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“The greater difficulty with identifying drugs compared to ligands is apparent in the number of known ligands compared with known drugs: there are 10&lt;sup 6&lt;/sup bioactive ligands in databases such as ChEMBL and PubChem but only on the order of 10&lt;sup 3&lt;/sup drugs on the market.”</p><footer>p. 4 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+      </ul>
+      
+      
+    </template>
+  </section>
+  
+  <section class="scene prereq" data-idx="2" data-id="prereq-conditional" data-role="prereq" data-depth="standard" data-seconds="37" hidden tabindex="-1">
+    
+    
+    <p class="kick">Before the paper</p>
+    <h1 class="headline">Biological data are conditional: the same experiment gives a different answer when a hidden variable changes</h1>
+    <p class="ana">Like a wearable sensor whose reading depends on skin tone, placement and ambient temperature — the number is real, but only under conditions nobody recorded.</p>
+    
+
+    
+      <p class="prose">The paper argues that biological data differ in kind from images or speech. Results depend on dozens to thousands of variables, and changing one can flip the outcome: imatinib works in Philadelphia chromosome-positive ALL but not in leukaemias driven by other aberrations, and CYP expression can make a fixed dose ineffective.
+
+On top of conditionality sits epistemic opacity: we generally lack a solid theoretical account connecting input to output in an experiment.
+
+The consequence for machine learning is direct. Labels are conditional, so we often cannot assign meaningful unconditional categories to compound effects — which is exactly what supervised models require.</p>
+    
+
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-cond-1">“The highly conditional nature of biological data&lt;sup 29&lt;/sup means that, depending on a l…” · p. 5</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-cond-2">“For example, if the BCR–ABL inhibitor imatinib is administered to a patient with Philadel…” · p. 5</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-cond-3">“The consequences for AI in drug discovery are profound: specifically, we often cannot ass…” · p. 4</button> <span class="chip">Cited</span></p>
+    
+
+    
+
+    <template class="drawer-content">
+      
+      <h3>Claims in this scene</h3>
+      <ul class="claims">
+        
+        <li data-claim="c-cond-1" data-span="sp-005-0101">
+          <span>The paper characterises biological data as highly conditional: depending on dozens to thousands of variables, a biological perturbation&#39;s result differs even if a single variable changes.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“The highly conditional nature of biological data&lt;sup 29&lt;/sup means that, depending on a large number (dozens to thousands) of variables, the result of a biological perturbation will differ, even if only a single variable changes.”</p><footer>p. 5 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+        <li data-claim="c-cond-2" data-span="sp-005-0102">
+          <span>Imatinib is likely to work in Philadelphia chromosome-positive acute lymphoblastic leukaemia but not in ALL driven by different aberrations, and CYP expression differences can render the same dose ineffective.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“For example, if the BCR–ABL inhibitor imatinib is administered to a patient with Philadelphia chromosome-positive acute lymphoblastic leukaemia, they will probably respond to the treatment — whereas other patients with acute lymphoblastic leukaemia whose cancer is driven by different aberrations will not.”</p><footer>p. 5 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+        <li data-claim="c-cond-3" data-span="sp-004-0099">
+          <span>The authors note we generally lack a solid theoretical understanding of the processes connecting input and output in an experiment — epistemic opacity — so meaningful unconditional categories often cannot be assigned, preventing consistent model training.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“The consequences for AI in drug discovery are profound: specifically, we often cannot assign meaningful and unconditional categories to, for example, compound effects, which prevents us from training AI models in a consistent and reliable manner to enable clinically relevant decision making (Table 2).”</p><footer>p. 4 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+      </ul>
+      
+      
+    </template>
+  </section>
+  
+  <section class="scene prereq" data-idx="3" data-id="prereq-usecase-metrics" data-role="prereq" data-depth="deep" data-seconds="38" hidden tabindex="-1">
+    
+    
+    <p class="kick">Before the paper</p>
+    <h1 class="headline">Selection, deselection and quantification need different performance metrics</h1>
+    <p class="ana">A screening test and a confirmatory test in the clinic are judged on different numbers — you tune one for catching everything, the other for being right.</p>
+    
+
+    
+      <p class="prose">Machine learning models support three different kinds of decisions. In selection settings you prioritise a few candidates out of many, so precision — the hit rate among the ones you test — is what matters. In deselection you screen out bad compounds, so recall among the undesired class matters. In quantification you predict a value for one fixed molecule, so a point-error measure like RMSE is appropriate.
+
+The paper&#39;s point: model performance must be evaluated in the context of the eventual use case. A generic metric optimised in isolation will not tell you whether the model helps in a real project.</p>
+    
+
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-uc-1">“The performance of a model therefore needs to be evaluated in the context of its eventual…” · p. 11</button> <span class="chip">Cited</span></p>
+    
+
+    
+
+    <template class="drawer-content">
+      
+      <h3>Claims in this scene</h3>
+      <ul class="claims">
+        
+        <li data-claim="c-uc-1" data-span="sp-011-0279">
+          <span>The paper distinguishes selection settings (precision/hit rate), deselection settings (recall among the undesired class) and quantification settings (point-error measures such as RMSE), and argues model performance must be evaluated in the context of its eventual use case.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“The performance of a model therefore needs to be evaluated in the context of its eventual use case.”</p><footer>p. 11 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+      </ul>
+      
+      
+    </template>
+  </section>
+  
+  <section class="scene before" data-idx="4" data-id="before" data-role="before" data-depth="deep" data-seconds="31" hidden tabindex="-1">
+    
+    
+    <p class="kick">The world before</p>
+    <h1 class="headline">AI capability in the life sciences has advanced fast, but clinical evidence has not followed</h1>
+    <p class="ana">A startup with dazzling demos and a full patent portfolio, but no customers who renewed.</p>
+    
+
+    
+      <p class="prose">The authors grant that technological capability is genuinely encouraging: protein structures can be predicted, proteins with certain functions designed, and new measurement technologies such as single-cell and spatial omics are available.
+
+But two recent reviews of the field show that most projects in &#39;AI-first&#39; companies sit in preclinical stages, with several dozen in phase I and phase II and only very few in phase III.
+
+The authors&#39; summary is careful: we are at a stage of &#39;absence of evidence&#39;, not &#39;evidence of absence&#39;, for AI translating into clinically relevant impact.</p>
+    
+
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-bef-1">“Two recent reviews of the field&lt;sup 5,6&lt;/sup show that the large majority of projects in…” · p. 2</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-bef-2">“For instance, we are able to predict a variety of protein structures&lt;sup 15&lt;/sup , and de…” · p. 2</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-bef-3">“It can be concluded that we are still at a stage with an ‘absence of evidence’ (and not n…” · p. 2</button> <span class="chip">Cited</span></p>
+    
+
+    
+
+    <template class="drawer-content">
+      
+      <h3>Claims in this scene</h3>
+      <ul class="claims">
+        
+        <li data-claim="c-bef-1" data-span="sp-002-0019">
+          <span>Reviews of the field show the large majority of projects in &#39;AI-first&#39; drug discovery companies are preclinical, with several dozen in phase I and II and only very few in phase III.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Two recent reviews of the field&lt;sup 5,6&lt;/sup show that the large majority of projects in ‘AI-first’ drug discovery companies are in preclinical stages, with several dozen in phase I and phase II and only very few in phase III&lt;sup 6&lt;/sup .”</p><footer>p. 2 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+        <li data-claim="c-bef-2" data-span="sp-002-0026">
+          <span>Progress with AI-based technological capabilities is more encouraging: protein structure prediction, design of proteins with certain functions, and new data-generating technologies such as single-cell and spatial omics.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“For instance, we are able to predict a variety of protein structures&lt;sup 15&lt;/sup , and design proteins with certain functions&lt;sup 16,17&lt;/sup .”</p><footer>p. 2 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+        <li data-claim="c-bef-3" data-span="sp-002-0024">
+          <span>The authors conclude the field is at a stage of &#39;absence of evidence&#39; rather than &#39;evidence of absence&#39; regarding AI&#39;s translation into clinically relevant impact.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“It can be concluded that we are still at a stage with an ‘absence of evidence’ (and not necessarily an ‘evidence of absence’) when it comes to the translation of AI into clinically relevant impact, at least in terms of drug approvals and the delivery of therapeutic breakthroughs rooted in novel biology and therapeutics truly discovered or explained by AI.”</p><footer>p. 2 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+      </ul>
+      
+      
+    </template>
+  </section>
+  
+  <section class="scene problem" data-idx="5" data-id="problem" data-role="problem" data-depth="brief" data-seconds="45" hidden tabindex="-1">
+    
+    
+    <p class="kick">The problem</p>
+    <h1 class="headline">The value sits in phase II success rates, but AI effort sits in preclinical hit discovery</h1>
+    <p class="ana">Searching for your keys under the streetlamp — the light is where the labelled data are, not where the keys fell.</p>
+    
+
+    
+      <p class="prose">The authors modelled how being faster, cheaper or better at each stage changes the total capitalized cost per successful drug launch. Reducing failure rates at phase II had the greatest impact — the phase where the focus shifts from safety and PK in a small, homogeneous group to efficacy and dosing in diverse patients, raising variability and confounders.
+
+Yet current AI effort in small-molecule discovery largely targets preclinical stages such as hit discovery. The authors name this directly as looking for the keys where the light is, rather than where they are likely to be.
+
+A worked comparison shows what clinical impact looks like: across ~21,000 compounds from 2000–2015, projects using biomarkers to match drugs to patients cost about half per successful launch compared with those that did not.</p>
+    
+
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-prob-1">“Reducing failure rates at phase II had the greatest impact. b , The estimated capitalized…” · p. 3</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-prob-2">“In addition, outside of oncology, phase I usually involves recruiting a small number of h…” · p. 2</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-prob-3">“Nevertheless, the risk of applying AI only to the preclinical phases of small-molecule dr…” · p. 2</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-prob-4">“The cost per successful launch for projects using biomarkers in the dataset studied (~21,…” · p. 3</button> <span class="chip">Cited</span></p>
+    
+
+    
+
+    <template class="drawer-content">
+      
+      <h3>Claims in this scene</h3>
+      <ul class="claims">
+        
+        <li data-claim="c-prob-1" data-span="sp-003-0057">
+          <span>In the authors&#39; cost model, reducing failure rates at phase II had the greatest impact on capitalized cost per successful launch.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Reducing failure rates at phase II had the greatest impact. b , The estimated capitalized costs per drug launch of projects using biomarkers to better match drugs to the right”</p><footer>p. 3 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+        <li data-claim="c-prob-2" data-span="sp-002-0043">
+          <span>Phase II has low success rates because it shifts from safety, tolerability and PK in a small homogeneous group to efficacy and dosing in diverse patients with different genetic backgrounds, severities and co-morbidities, increasing variability and confounding.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“In addition, outside of oncology, phase I usually involves recruiting a small number of healthy volunteers, making variability lower, whereas in phase II, diverse patients with different genetic backgrounds, disease severities and co-morbidities are involved, increasing variability and potential confounding factors.”</p><footer>p. 2 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+        <li data-claim="c-prob-3" data-span="sp-002-0049">
+          <span>Current AI efforts in small-molecule drug discovery largely focus on preclinical phases such as hit discovery, which the authors compare to looking for keys where the light (the labelled data) is.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Nevertheless, the risk of applying AI only to the preclinical phases of small-molecule drug discovery (and in the ML literature, often to ‘ligand discovery’ rather than ‘drug discovery’; Box 1) is the analogy to a situation where one ‘looks for the keys where the light is’ — in this case, where the labelled data are that we can more easily model.”</p><footer>p. 2 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+        <li data-claim="c-prob-4" data-span="sp-003-0059">
+          <span>In a dataset of ~21,000 compounds from commercial drug-candidate databases spanning 2000–2015, cost per successful launch for projects using biomarkers for patient stratification was estimated at roughly half that of projects that did not, attributable to increased clinical success rates under a constant cost-per-trial assumption.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“The cost per successful launch for projects using biomarkers in the dataset studied (~21,000 compounds in commercial databases of drug candidates from 2000–2015) was estimated to be approximately half that for projects that did not.”</p><footer>p. 3 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+      </ul>
+      
+      
+    </template>
+  </section>
+  
+  <section class="scene tried" data-idx="6" data-id="tried-data" data-role="tried" data-depth="brief" data-seconds="39" hidden tabindex="-1">
+    
+    
+    <p class="kick">What they tried</p>
+    <h1 class="headline">They audited the data actually fed to these models and found proxies with weak links to what matters</h1>
+    <p class="ana">Building a device validated against a bench phantom that only loosely resembles the tissue it will be used on.</p>
+    
+
+    
+      <p class="prose">Instead of proposing a new algorithm, the authors examine the inputs. Two example datasets show the problem. Liver-organoid cytotoxicity IC50, even corrected for human plasma exposure (Cmax), correlates poorly with clinical drug-induced liver injury liability, with large overlap between risk classes. Thermal shift assays — cheap and high-throughput — are only marginally associated with the harder-to-measure IC50 activity.
+
+On the chemical side, the space is roughly 10^60 small molecules, and datasets are local and biased; appending a functional group to one scaffold does something different than on another.
+
+Even the benchmark sets are disjoint: across four common ADME datasets, only 0.1% of compounds and 0.6% of scaffolds are shared among all of them.</p>
+    
+
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-try-1">“The aim of the application illustrated in Fig. 2a is to predict drug-induced liver injury…” · p. 6</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-try-2">“Although it is easy to generate, the thermal shift data have relatively low predictivity…” · p. 7</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-try-3">“In comparison, chemical space is probably even larger — up to ~10&lt;sup 60&lt;/sup compounds i…” · p. 7</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-try-4">“Only 0.1% of compounds and 0.6% of scaffolds are shared among all datasets.” · p. 8</button> <span class="chip">Cited</span></p>
+    
+
+    
+
+    <template class="drawer-content">
+      
+      <h3>Claims in this scene</h3>
+      <ul class="claims">
+        
+        <li data-claim="c-try-1" data-span="sp-006-0133">
+          <span>Liver-organoid cytotoxicity IC50, even corrected for human plasma exposure (Cmax), correlates poorly with clinical drug-induced liver injury liability, with large overlap between clinical risk classes.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“The aim of the application illustrated in Fig. 2a is to predict drug-induced liver injury liability using data from screening compounds in liver organoids, but the correlation between clinical drug-induced liver injury risk in patients and the in vitro assay readout is low, even when the readout is corrected for human plasma exposure ( C max) — it would be even closer to zero otherwise.”</p><footer>p. 6 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+        <li data-claim="c-try-2" data-span="sp-007-0170">
+          <span>Thermal shift data, though easy to generate, have relatively low predictivity for enzymatic inhibition (IC50) against the target studied.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Although it is easy to generate, the thermal shift data have relatively low predictivity for enzymatic inhibition.”</p><footer>p. 7 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+        <li data-claim="c-try-3" data-span="sp-007-0162">
+          <span>Small-molecule chemical space is estimated at up to ~10^60 compounds and is very local in nature, so practical datasets sample only a tiny, biased fraction and extrapolation is fundamentally difficult.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“In comparison, chemical space is probably even larger — up to ~10&lt;sup 60&lt;/sup compounds in small-molecule space&lt;sup 39&lt;/sup — and for all practical purposes infinite when it comes to macromolecules and assemblies thereof.”</p><footer>p. 7 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+        <li data-claim="c-try-4" data-span="sp-008-0185">
+          <span>Across four commonly used ADME-related datasets from the Therapeutics Data Commons, only 0.1% of compounds and 0.6% of scaffolds are shared among all datasets, giving the resulting models different applicability domains.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Only 0.1% of compounds and 0.6% of scaffolds are shared among all datasets.”</p><footer>p. 8 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+      </ul>
+      
+      
+    </template>
+  </section>
+  
+  <section class="scene tried" data-idx="7" data-id="tried-validation" data-role="tried" data-depth="standard" data-seconds="40" hidden tabindex="-1">
+    
+    
+    <p class="kick">What they tried</p>
+    <h1 class="headline">They reframe validation: a model sits inside a project context and feeds a decision, not a test set</h1>
+    <p class="ana">Validating a diagnostic by its ROC curve alone, without asking who gets tested, at what threshold, and what happens next.</p>
+    
+
+    
+      <p class="prose">The authors&#39; central diagram puts model validation in an inner box and surrounds it with two interfaces: the project context that supplies parameters, and the follow-up experiments that act on predictions. Their toxicity example: the concentration cutoff is fixed when the training data are generated, but the dose a compound reaches in humans is only known later, so the model may simply not be relevant.
+
+They also warn about information leakage. Publications rarely do prospective validation, and test sets split from the same source dataset inflate performance in a way that does not transfer to future projects.
+
+They call this underspecification, and note that benchmark-chasing can create an illusion of progress — Goodhart&#39;s law in action.</p>
+    
+
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-val-1">“Without paying attention to these two interfaces (project context and contextual decision…” · p. 10</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-val-2">“As a result, a model trained using one cut-off value for concentration may not be relevan…” · p. 10</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-val-3">“split from the same original dataset) effectively lead to ‘information leakage’&lt;sup 43&lt;/s…” · p. 9</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-val-4">“The focus on benchmarking datasets, even when considering best practices for ML in the fi…” · p. 9</button> <span class="chip">Cited</span></p>
+    
+
+    
+
+    <template class="drawer-content">
+      
+      <h3>Claims in this scene</h3>
+      <ul class="claims">
+        
+        <li data-claim="c-val-1" data-span="sp-010-0257">
+          <span>The authors argue a model does not exist in a vacuum but operates within a project context that supplies inputs and a set of decisions its outputs inform, and that validating a model alone loses translation to practical decision making.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Without paying attention to these two interfaces (project context and contextual decision-making factors) — and instead just ‘validating the model’ alone — there is a loss of translation to a situation where the model is meant to support practical decision making.”</p><footer>p. 10 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+        <li data-claim="c-val-2" data-span="sp-010-0252">
+          <span>In their toxicity example, the concentration cutoff is fixed at data-generation time while the dose reached in humans is only known at model-use time, so a model trained on one cutoff may be irrelevant.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“As a result, a model trained using one cut-off value for concentration may not be relevant if the concentration reached in humans differs.”</p><footer>p. 10 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+        <li data-claim="c-val-3" data-span="sp-009-0190">
+          <span>Publications very often perform no prospective validation, and test sets split from the same original dataset cause information leakage and artificially increased test-set performance that does not translate to future projects.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“split from the same original dataset) effectively lead to ‘information leakage’&lt;sup 43&lt;/sup and an artificial increase of performance on the test set, which does not translate to future projects.”</p><footer>p. 9 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+        <li data-claim="c-val-4" data-span="sp-009-0213">
+          <span>The authors describe this as an insufficiently specified problem setting (underspecification) and warn that a focus on benchmarking datasets can be misleading and create an illusion of progress, invoking Goodhart&#39;s law.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“The focus on benchmarking datasets, even when considering best practices for ML in the field&lt;sup 48&lt;/sup , can hence even be misleading and create an illusion of progress — ‘we are able to predict better on the benchmark dataset’.”</p><footer>p. 9 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+      </ul>
+      
+      
+    </template>
+  </section>
+  
+  <section class="scene predict" data-idx="8" data-id="predict" data-role="predict" data-depth="brief" data-seconds="76" hidden tabindex="-1">
+    
+    
+    <p class="kick">Your prediction</p>
+    <h1 class="headline">What happens when two models have nearly the same AUC but are used for different jobs?</h1>
+    <p class="ana">Two candidates with identical GPAs — one is right for the lab bench, the other for the sales floor.</p>
+    
+
+    
+      <p class="prose">The authors construct two hypothetical models with approximately the same area under the curve, the standard summary metric for a binary classifier across all thresholds.
+
+One is then used for early selection — pick the top 10% of a screening library to test. The other job is late-stage deselection — throw out the 80% most likely to be toxic and test the rest.
+
+If AUC were the right summary, both models should behave about the same in both jobs. Make a call before reading on.</p>
+      <fieldset class="predict" data-reveal="found" data-answer="1">
+        <legend class="visually-hidden">Two models with nearly identical AUC are used for early selection and for late-stage deselection. What does the paper show?</legend>
+        
+        <label class="opt"><input type="radio" name="pred-predict" value="0"> <span>They perform about equally in both settings, because AUC summarises the whole curve</span></label>
+        
+        <label class="opt"><input type="radio" name="pred-predict" value="1"> <span>One model roughly doubles the other in selection, while the other beats it about threefold in deselection</span></label>
+        
+        <label class="opt"><input type="radio" name="pred-predict" value="2"> <span>Both fail in deselection because AUC only measures ranking near the top</span></label>
+        
+        <label class="opt"><input type="radio" name="pred-predict" value="3"> <span>The better-AUC model wins in both settings, just by different margins</span></label>
+        
+      </fieldset>
+      <p class="predict-actions">
+        <button type="button" class="btn p lock" disabled>Lock it in →</button>
+        <button type="button" class="linkish skip">Skip prediction</button>
+      </p>
+      <p class="locked-note" hidden>Locked in. Next shows what the paper found.</p>
+    
+
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-pred-1">“Two hypothetical models with approximately similar behaviour with respect to a frequently…” · p. 12</button> <span class="chip">Cited</span></p>
+    
+
+    
+
+    <template class="drawer-content">
+      
+      <h3>Claims in this scene</h3>
+      <ul class="claims">
+        
+        <li data-claim="c-pred-1" data-span="sp-012-0307">
+          <span>The authors present two hypothetical models with approximately similar area under the curve but very different behaviour in real-world selection and deselection use cases.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Two hypothetical models with approximately similar behaviour with respect to a frequently used model performance metric (area under the curve (AUC)), but very different behaviour in real-world use cases, are shown.”</p><footer>p. 12 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+      </ul>
+      
+      
+    </template>
+  </section>
+  
+  <section class="scene found" data-idx="9" data-id="found" data-role="found" data-depth="brief" data-seconds="32" hidden tabindex="-1">
+    
+    
+    <p class="kick">What they found</p>
+    <h1 class="headline">Equal AUC, opposite winners: one model doubles hit rate in selection, the other is threefold better at screening out toxicity</h1>
+    
+    
+
+    
+      <div class="said" data-predict="predict" hidden></div>
+      
+      <blockquote class="rev" data-reveal-quote><p>“If 10% of the top-ranked compounds in the library are selected, the proportion of compounds that are actually in the desired class when tested experimentally would be 40% in case of model 2 compared with 20% in case of model 1.”</p><footer>p. 12 · Cited · the paper's own words</footer></blockquote>
+      
+      <p class="verd" data-verdict hidden></p>
+      <p class="prose">Selecting the top 10% of the library, model 2 yields 40% true actives among tested compounds versus 20% for model 1 — a twofold advantage. Reverse the job: deselect the 80% ranked most likely toxic and test the remaining 20%, and model 1 leaves only 3.3% undesirable compounds versus 10% for model 2 — roughly threefold better.
+
+Same AUC, opposite recommendations. The authors&#39; conclusion is that a generic metric makes it impossible to predict fitness-for-purpose, and that metric choice is one reason published performance and real-world performance diverge.
+
+This is the paper&#39;s general diagnosis in miniature: the number that gets optimised is not the number that governs the decision.</p>
+    
+
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-found-2">“These two situations illustrate the problems with generic model validation using the AUC…” · p. 12</button> <span class="chip">Cited</span></p>
+    
+
+    
+
+    <template class="drawer-content">
+      
+      <h3>Claims in this scene</h3>
+      <ul class="claims">
+        
+        <li data-claim="c-found-1" data-span="sp-012-0310">
+          <span>Selecting the top 10% of a library, model 2 gives 40% desired-class compounds versus 20% for model 1 (about twofold better); in a deselection setting where 80% are discarded and 20% tested, model 1 leaves 3.3% undesirable compounds versus 10% for model 2 (about threefold better).</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“If 10% of the top-ranked compounds in the library are selected, the proportion of compounds that are actually in the desired class when tested experimentally would be 40% in case of model 2 compared with 20% in case of model 1.”</p><footer>p. 12 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+        <li data-claim="c-found-2" data-span="sp-012-0314">
+          <span>The authors conclude that generic validation using AUC without regard to use case makes it impossible to predict model fitness-for-purpose, and that metric choice is one reason reported and real-world performance differ greatly.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“These two situations illustrate the problems with generic model validation using the AUC as a performance metric without taking the use case into account, which makes it impossible to predict model fitness-for-purpose for a real-world situation&lt;sup 65&lt;/sup .”</p><footer>p. 12 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+      </ul>
+      
+      
+    </template>
+  </section>
+  
+  <section class="scene found" data-idx="10" data-id="found-xai" data-role="found" data-depth="deep" data-seconds="35" hidden tabindex="-1">
+    
+    
+    <p class="kick">What they found</p>
+    <h1 class="headline">Explainable AI on biased chemical data can confidently explain an artefact</h1>
+    <p class="ana">A recommendation engine that concludes hospital beds cause illness because sick people are always found in them.</p>
+    
+
+    
+      <p class="prose">A second failure the authors highlight concerns explainability. In a study of several hundred bitter molecules, an information-gain criterion on fingerprints flagged sugar rings as the features associated with bitterness.
+
+That is almost certainly a dataset artefact: natural products are frequently glycosylated and frequently bitter, so the correlation is spurious. Here the artefact is obvious; in other chemical applications it need not be.
+
+The authors are careful to say this is not a shortcoming of the algorithms, which are powerful on the right data. Real-world chemical datasets carry synthesis, project, confirmation and reporting biases, and are sparse — that is the problem.</p>
+    
+
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-xai-1">“Using an information gain criterion on a fingerprint representation, the features flagged…” · p. 9</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-xai-2">“They rather represent a spurious correlation in the data caused by dataset bias, as natur…” · p. 9</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-xai-3">“The issue is that chemical datasets, in the way they are available in real-world situatio…” · p. 9</button> <span class="chip">Cited</span></p>
+    
+
+    
+
+    <template class="drawer-content">
+      
+      <h3>Claims in this scene</h3>
+      <ul class="claims">
+        
+        <li data-claim="c-xai-1" data-span="sp-009-0195">
+          <span>In a study aiming to identify chemical features associated with bitterness across several hundred bitter molecules, an information-gain criterion on fingerprints flagged sugar rings as correlated with bitterness.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Using an information gain criterion on a fingerprint representation, the features flagged as correlated with bitterness were, rather surprisingly, sugar rings (and parts thereof).”</p><footer>p. 9 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+        <li data-claim="c-xai-2" data-span="sp-009-0197">
+          <span>The authors attribute this to dataset bias — natural products are frequently glycosylated and frequently bitter — making it a spurious correlation that would not be obvious in other applications.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“They rather represent a spurious correlation in the data caused by dataset bias, as natural products are frequently glycosylated&lt;sup 46&lt;/sup and natural products also frequently have bitter taste.”</p><footer>p. 9 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+        <li data-claim="c-xai-3" data-span="sp-009-0202">
+          <span>The authors state this is not a shortcoming of the algorithms but of chemical datasets as they exist in practice, which suffer data sparseness and sampling biases including synthesis, confirmation, project and reporting bias.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“The issue is that chemical datasets, in the way they are available in real-world situations, do not belong to this category of data owing to data sparseness and sampling biases.”</p><footer>p. 9 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+      </ul>
+      
+      
+    </template>
+  </section>
+  
+  <section class="scene found" data-idx="11" data-id="found-alphafold" data-role="found" data-depth="deep" data-seconds="39" hidden tabindex="-1">
+    
+    
+    <p class="kick">What they found</p>
+    <h1 class="headline">AlphaFold succeeds where a ground truth exists — and that condition rarely holds elsewhere</h1>
+    <p class="ana">A calibration standard exists for a force gauge; there is no equivalent reference block for &#39;patient improved&#39;.</p>
+    
+
+    
+      <p class="prose">The authors treat protein structure prediction as the instructive exception. AlphaFold rests on about 50 years of Protein Data Bank depositions, where electron density serves as a suitable ground truth for both training and evaluation. Such a scenario is not available for many other desired predictions.
+
+They also separate model validation from process validation. AlphaFold2 reached roughly 90% folding accuracy, but predicted structures gave mixed results for virtual screening — often comparable to traditional homology models — which is the next step in the drug discovery process.
+
+Generative small-molecule design is likewise established for improving hit rates, but the contribution is mostly better search of chemical space, still ligand design rather than drug design.</p>
+    
+
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-af-1">“For example, AlphaFold&lt;sup 59&lt;/sup falls into this area, as it is built on about 50 years…” · p. 10</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-af-2">“In this respect, although AlphaFold2 achieved a score of ~90% with regards to folding acc…” · p. 12</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-af-3">“However, the contribution of AI technology here is predominantly in enhanced search of ch…” · p. 12</button> <span class="chip">Cited</span></p>
+    
+
+    
+
+    <template class="drawer-content">
+      
+      <h3>Claims in this scene</h3>
+      <ul class="claims">
+        
+        <li data-claim="c-af-1" data-span="sp-010-0236">
+          <span>AlphaFold&#39;s success rests on about 50 years of Protein Data Bank depositions where electron density provides a suitable ground truth, a scenario not available for many other desired predictions.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“For example, AlphaFold&lt;sup 59&lt;/sup falls into this area, as it is built on about 50 years of data deposited in the Protein data Bank (PDB), where electron density (with all its shortcomings&lt;sup 60&lt;/sup ) represents a suitable ground truth for model generation and evaluation.”</p><footer>p. 10 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+        <li data-claim="c-af-2" data-span="sp-012-0322">
+          <span>AlphaFold2 achieved a folding accuracy score of ~90% but has shown mixed results, often comparable to traditional homology models, when its predicted structures are used for virtual screening of compounds.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“In this respect, although AlphaFold2 achieved a score of ~90% with regards to folding accuracy&lt;sup 81&lt;/sup , it has shown mixed results (often comparable to traditional homology models) when predicted protein structures are used for virtual screening of compounds&lt;sup 82–84&lt;/sup — the next logical step in the drug discovery process.”</p><footer>p. 12 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+        <li data-claim="c-af-3" data-span="sp-012-0331">
+          <span>Generative models for small-molecule design are established for improving hit finding, but the AI contribution is predominantly enhanced search of chemical spaces, with success still mostly limited to ligand design rather than drug design because in vivo properties such as human bioavailability cannot be accurately predicted.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“However, the contribution of AI technology here is predominantly in enhanced search of chemical spaces, and success is still mostly limited to ligand design rather than drug design (Box 1), due to the persistent limitations of AI models to accurately predict in vivo properties such as human bioavailability needed to guide the search with clinical relevance.”</p><footer>p. 12 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+      </ul>
+      
+      
+    </template>
+  </section>
+  
+  <section class="scene changed" data-idx="12" data-id="changed" data-role="changed" data-depth="brief" data-seconds="41" hidden tabindex="-1">
+    
+    
+    <p class="kick">What changed</p>
+    <h1 class="headline">Their prescription: design the data for the decision, validate inside the process, and close the loop with clinical outcomes</h1>
+    <p class="ana">Stop optimising the demo and start running customer discovery — build the thing that changes what someone actually does.</p>
+    
+
+    
+      <p class="prose">The authors&#39; first recommendation is a two-phase data strategy: an exploratory phase establishing which proxy assay actually predicts a clinically relevant endpoint, then a production phase that scales generation, establishes the applicability domain and integrates with PK models so exposure at the site of action is accounted for.
+
+Second, they want preclinical models to learn from clinical observations — including negative and suboptimal outcomes — which is hard because clinical data sit behind different access rules and databases inside the same company.
+
+They judge a model&#39;s value by two things: its impact on clinical success where applied, and the breadth of its applicability domain across projects. And they frame the cultural shift as moving from &#39;tech push&#39; to &#39;science pull&#39;.</p>
+    
+
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-chg-1">“With suitable experimental design, the model needs to be tuned for and validated on this…” · p. 16</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-chg-2">“Learning from clinical outcomes, however, is crucial to determine which data are predicti…” · p. 17</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-chg-3">“Although the specifics of what is ‘right to do’ will depend on the context, the value of…” · p. 14</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-chg-4">“This is in contrast to situations where data are generated primarily through ‘tech push’…” · p. 14</button> <span class="chip">Cited</span></p>
+    
+
+    
+
+    <template class="drawer-content">
+      
+      <h3>Claims in this scene</h3>
+      <ul class="claims">
+        
+        <li data-claim="c-chg-1" data-span="sp-016-0399">
+          <span>The authors recommend a two-phase data generation approach: an exploratory phase establishing which proxy data predict a clinically relevant endpoint, then a production phase scaling up, establishing the applicability domain and integrating with PK models to account for exposure at the site of action.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“With suitable experimental design, the model needs to be tuned for and validated on this larger dataset, its applicability domain needs to be established and finally the model needs to be integrated with pharmacokinetics models to ensure translation to the clinical situation, which takes exposure at the site of action into account. b , To improve the predictivity of models with clinical relevance, artificial intelligence models predictive for preclinical end points need to learn from clinical observations.”</p><footer>p. 16 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+        <li data-claim="c-chg-2" data-span="sp-017-0428">
+          <span>They argue preclinical models must learn from clinical observations, including negative or suboptimal outcomes, though preclinical–clinical barriers from data protection policies and separate databases make this challenging in practice.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Learning from clinical outcomes, however, is crucial to determine which data are predictive for clinical end points (Fig. 6b).”</p><footer>p. 17 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+        <li data-claim="c-chg-3" data-span="sp-014-0356">
+          <span>They propose that the value of a computational model is determined by its impact on clinical success of the projects where it is applied and by the breadth of its project applicability domain.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Although the specifics of what is ‘right to do’ will depend on the context, the value of any computational model will ultimately be determined by two characteristics: its broad applicability across project decision points and its ability to improve clinical translation.”</p><footer>p. 14 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+        <li data-claim="c-chg-4" data-span="sp-014-0342">
+          <span>They contrast data generated through &#39;tech push&#39; and later repurposed with data driven by &#39;science pull&#39;, and call for the field to move from a technology-focused to a science-focused view.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“This is in contrast to situations where data are generated primarily through ‘tech push’ rather than ‘science pull’, and then later repurposed for new applications.”</p><footer>p. 14 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+      </ul>
+      
+      
+    </template>
+  </section>
+  
+  <section class="scene changed" data-idx="13" data-id="changed-incentives" data-role="changed" data-depth="deep" data-seconds="39" hidden tabindex="-1">
+    
+    
+    <p class="kick">What changed</p>
+    <h1 class="headline">The blockers are also incentives: funding promises, publication pressure, and consortia that pooled data retrospectively</h1>
+    <p class="ana">A startup that raised on a bold promise and then has to keep telling the story, whatever the data say.</p>
+    
+
+    
+      <p class="prose">The authors name non-technical forces. Rising cost per approved drug (Eroom&#39;s law) pressures companies to change, while &#39;AI-first&#39; companies launched on extravagant promises face pressure to go all in on them, which can adversely affect decisions. Publishing incentives reward pushing state-of-the-art on toy datasets whose real-world applicability may be near zero.
+
+They also diagnose past consortia. Some IMI efforts fell short because data were pooled retrospectively across companies — clearance data mixed across assay formats, species and thresholds — assuming an equivalence that did not exist, and chemical space coverage was taken as given rather than designed.
+
+Their closing metric: what matters is clinical approval rates and novelty in modality and mode-of-action space.</p>
+    
+
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-inc-1">“At the same time, ‘AI first’ companies are often launched with extravagant promises, esca…” · p. 18</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-inc-2">“This can result in the publication of substandard work (Peplow discusses one such example…” · p. 18</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-inc-3">“Data were frequently pooled retrospectively, having been generated for different purposes…” · p. 17</button> <span class="chip">Cited</span></p>
+    
+    <p class="src"><button type="button" class="linkish open-drawer" data-claim="c-inc-4">“Ultimately, what truly matters is increasing clinical approval rates, as well as novelty…” · p. 18</button> <span class="chip">Cited</span></p>
+    
+
+    
+
+    <template class="drawer-content">
+      
+      <h3>Claims in this scene</h3>
+      <ul class="claims">
+        
+        <li data-claim="c-inc-1" data-span="sp-018-0462">
+          <span>The authors cite rising cost per approved drug (Eroom&#39;s law) and the extravagant promises on which &#39;AI first&#39; companies are launched as pressures that can adversely impact decisions.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“At the same time, ‘AI first’ companies are often launched with extravagant promises, escalating the pressure faced by both the company and its investors to go all in on those promises, which can adversely impact decisions&lt;sup 133&lt;/sup .”</p><footer>p. 18 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+        <li data-claim="c-inc-2" data-span="sp-018-0465">
+          <span>They argue publication incentives mean models that numerically push state-of-the-art on toy datasets get attention while their real-world applicability may be close to non-existent, creating an illusion of progress.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“This can result in the publication of substandard work (Peplow discusses one such example from materials discovery&lt;sup 137&lt;/sup ) and may help explain why ‘high-impact’ journals are seeing an uptick in retractions&lt;sup 138&lt;/sup .&lt;sup In the context of the topic&lt;/sup discussed here, models that ‘numerically push the state-of-the-art’ on toy datasets are published and receive a lot of attention, whereas their concrete applicability to, and impact on, real-world processes may be close to non-existent or be overlooked.”</p><footer>p. 18 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+        <li data-claim="c-inc-3" data-span="sp-017-0445">
+          <span>Some consortia such as the IMI consortia fell short because data were pooled retrospectively across heterogeneous conditions — for example clearance data across differing assay formats, species or thresholds — and chemical space coverage was taken as given rather than designed.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Data were frequently pooled retrospectively, having been generated for different purposes and under heterogeneous conditions.”</p><footer>p. 17 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+        <li data-claim="c-inc-4" data-span="sp-018-0477">
+          <span>The authors state that what ultimately matters is increasing clinical approval rates as well as novelty in modality and mode-of-action space, rather than contrived proxy measures optimised for publications.</span> <span class="chip">Cited</span>
+          <blockquote class="quote"><p>“Ultimately, what truly matters is increasing clinical approval rates, as well as novelty in both modality and mode of action space.”</p><footer>p. 18 · shown exactly as extracted</footer></blockquote>
+          <p class="dl">Page image omitted in this shared version (the source paper is copyrighted). The full tool shows the highlighted page here. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+          
+        </li>
+        
+      </ul>
+      
+      
+    </template>
+  </section>
+  
+
+  <!-- Closing scene -->
+  <section class="scene close" data-idx="14" data-role="close" data-depth="brief" hidden tabindex="-1">
+    <p class="kick">Close</p>
+    <h1 class="headline">What you take with you</h1>
+    <div class="closing">
+      <h3>Your prediction</h3>
+      <p id="close-prediction">You did not make a prediction.</p>
+      <h3>The paper's finding</h3><blockquote class="quote"><p>“If 10% of the top-ranked compounds in the library are selected, the proportion of compounds that are actually in the desired class when tested experimentally would be 40% in case of model 2 compared with 20% in case of model 1.”</p><footer>p. 12</footer></blockquote>
+      
+      <h3>You now have</h3>
+      <ul class="concepts"><li><b>Ligand versus drug</b> — Binding a target is necessary but far from sufficient; roughly 10^6 known ligands correspond to about 10^3 marketed drugs.</li><li><b>Conditional biological data</b> — Biological readouts depend on dozens to thousands of unrecorded variables, so labels are conditional and often cannot be made unconditional categories.</li><li><b>Use-case-dependent model metrics</b> — Selection, deselection and quantification demand different performance metrics; equal AUC can hide opposite real-world rankings.</li><li><b>Process validation vs model validation</b> — A model must be evaluated inside its project context and the decisions it feeds, not only on a held-out test set.</li><li><b>Predictive validity of proxy data</b> — Cheap proxy assays like liver organoid cytotoxicity or thermal shift may correlate weakly with the clinical endpoint they stand in for.</li></ul>
+      
+      <h3>The paper</h3>
+      <p class="cite">Andreas Bender. Artificial intelligence in drug discovery — what it is, where we stand and the path forward. Nature Reviews Drug Discovery, doi:10.1038/s41573-026-01496-2. <a href="https://doi.org/10.1038/s41573-026-01496-2" rel="noopener">Original paper</a></p>
+      <p class="share-note">Made with learningtool. Not affiliated with or endorsed by the authors or publisher. Quotes are the paper's words; the interactive models are illustrative, not the study's measurements.</p>
+    </div>
+    <p><button type="button" class="btn" id="restart">Back to start</button></p>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="dial small" role="radiogroup" aria-label="Depth">
+    <label><input type="radio" name="depth-foot" value="brief"> brief</label><label><input type="radio" name="depth-foot" value="standard" checked> standard</label><label><input type="radio" name="depth-foot" value="deep"> deep</label>
+  </div>
+  <div>
+    <button type="button" class="btn" id="back">← Back</button>
+    <button type="button" class="btn p" id="next">Next →</button>
+  </div>
+</footer>
+
+<dialog id="drawer" aria-label="The paper's words"><div class="drawer-inner"><button type="button" class="close-drawer linkish" aria-label="Close">Close</button><div id="drawer-body"></div></div></dialog>
+<dialog id="scene-menu" aria-label="Scenes"><ol id="menu-list"></ol><button type="button" class="linkish close-menu">Close</button></dialog>
+<div class="visually-hidden" aria-live="polite" id="announce"></div>
+
+<script>window.TEMPLATES = window.TEMPLATES || {};
+window.TEMPLATES["before-after-groups"] = ((manifest) => {
+// Before/after, two groups. Baseline is fixed; the params are the changes.
+//   treated_after = baseline + treatment_effect
+//   control_after = baseline + control_drift
+//   difference    = treatment_effect - control_drift
+// Illustrative only: bars show the shape of a two-group comparison, not the study's values.
+
+const BASELINE = 0.5;
+function model(params) {
+  const t = BASELINE + Number(params.treatment_effect);
+  const c = BASELINE + Number(params.control_drift);
+  return { treated_after: t, control_after: c, difference: t - c };
+}
+function curve(params) {
+  const m = model(params);
+  return [BASELINE, m.treated_after, BASELINE, m.control_after];
+}
+function draw(ctx, params, w, h, opts) {
+  const pad = { l: 44, r: 16, t: 20, b: 34 };
+  const bars = curve(params);
+  const labels = ["treated · before", "treated · after", "control · before", "control · after"];
+  const colors = ["#D9D2C5", "#1F1D1A", "#D9D2C5", "#5B5F66"];
+  const maxV = 1.1;
+  const y = (v) => pad.t + (1 - Math.max(0, v) / maxV) * (h - pad.t - pad.b);
+  const slot = (w - pad.l - pad.r) / 4;
+  ctx.clearRect(0, 0, w, h);
+  ctx.font = "13px Inter, system-ui, sans-serif";
+  ctx.strokeStyle = "#D9D2C5"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, h - pad.b); ctx.lineTo(w - pad.r, h - pad.b); ctx.stroke();
+  bars.forEach((v, i) => {
+    const x0 = pad.l + i * slot + slot * 0.2;
+    ctx.fillStyle = colors[i];
+    ctx.fillRect(x0, y(v), slot * 0.6, h - pad.b - y(v));
+    ctx.fillStyle = "#5B5F66";
+    ctx.fillText(labels[i], x0 - 4, h - 12);
+  });
+  if (opts && opts.start) {
+    const s = model(opts.start);
+    ctx.strokeStyle = "#B5502F"; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(pad.l, y(s.treated_after)); ctx.lineTo(w - pad.r, y(s.treated_after)); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = "#B5502F"; ctx.fillText("starting value", w - pad.r - 90, y(s.treated_after) - 6);
+  }
+}
+
+return {model, curve, draw, manifest};
+})({
+  "id": "before-after-groups",
+  "name": "Before and after, two groups",
+  "description": "A treated group and a control group each measured before and after. Shows how the difference between groups depends on the treatment effect and any drift in the controls. For studies that compared two groups at two time points; never implies a dose-response curve.",
+  "mechanism_keywords": ["control group", "sham", "placebo", "pre", "post", "before", "after", "compared with"],
+  "params": {
+    "treatment_effect": {"lo": -0.2, "hi": 0.6, "default": 0.25, "unit": "", "label": "Change in the treated group"},
+    "control_drift": {"lo": -0.2, "hi": 0.3, "default": 0.03, "unit": "", "label": "Change in the control group"}
+  },
+  "defaults": {"treatment_effect": 0.25, "control_drift": 0.03},
+  "units": {"treatment_effect": "", "control_drift": ""},
+  "outputs": ["treated_after", "control_after", "difference"],
+  "output_labels": {"treated_after": "treated group, after", "control_after": "control group, after", "difference": "difference between groups"},
+  "axes": {"x": "group", "y": "score (normalized)"}
+}
+);
+window.TEMPLATES["threshold-learning-curve"] = ((manifest) => {
+// Threshold-gated learning curve.
+//
+//   power(0) = baseline
+//   each session: forgetting pulls power toward baseline (more between-session
+//   days -> more forgetting), then reward-gated learning pushes it up in
+//   proportion to how likely the signal is to beat the threshold.
+//
+//   reward_prob = sigmoid((power - threshold) / k)
+//   power <- baseline + (power - baseline) * decay      decay = exp(-0.08 * 7 / sessions_per_week)
+//   power <- power + rate * reward_prob * (1 - power)
+//
+// Illustrative only. The math is owned here; the lesson only supplies params.
+// `manifest` is injected by the page bundle (window.TEMPLATES) and is also
+// importable by the node test runner, which passes params directly.
+
+const BASELINE = 0.35;
+const RATE = 0.25;
+const K = 0.15;
+
+function simulate(params) {
+  const sessions = 20;
+  const threshold = Number(params.threshold);
+  const perWeek = Math.min(7, Math.max(1, Number(params.sessions_per_week)));
+  const decay = Math.exp(-0.08 * (7 / perWeek));
+  let power = BASELINE;
+  const ys = [power];
+  let firstReward = null;
+  for (let s = 1; s <= sessions; s++) {
+    const rewardProb = 1 / (1 + Math.exp(-(power - threshold) / K));
+    if (firstReward === null && rewardProb > 0.5) firstReward = s;
+    power = BASELINE + (power - BASELINE) * decay;
+    power = power + RATE * rewardProb * (1 - power);
+    ys.push(power);
+  }
+  return { ys, final_power: power, sessions_to_reward: firstReward === null ? sessions + 1 : firstReward };
+}
+function model(params) {
+  const r = simulate(params);
+  return { final_power: r.final_power, sessions_to_reward: r.sessions_to_reward };
+}
+function curve(params, xs) {
+  const r = simulate(params);
+  return (xs || r.ys.map((_, i) => i)).map((x) => r.ys[Math.min(r.ys.length - 1, Math.max(0, Math.round(x)))]);
+}
+function draw(ctx, params, w, h, opts) {
+  const pad = { l: 44, r: 16, t: 20, b: 34 };
+  const ys = curve(params);
+  const startYs = opts && opts.start ? curve(opts.start) : null;
+  const n = ys.length - 1;
+  const x = (i) => pad.l + (i / n) * (w - pad.l - pad.r);
+  const y = (v) => pad.t + (1 - v) * (h - pad.t - pad.b);
+  ctx.clearRect(0, 0, w, h);
+  ctx.font = "13px Inter, system-ui, sans-serif";
+  ctx.fillStyle = "#5B5F66";
+  ctx.strokeStyle = "#D9D2C5";
+  ctx.lineWidth = 1;
+  // axes
+  ctx.beginPath(); ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, h - pad.b); ctx.lineTo(w - pad.r, h - pad.b); ctx.stroke();
+  ctx.fillText("session 1", pad.l, h - 12);
+  ctx.fillText("session " + n, w - pad.r - 64, h - 12);
+  ctx.save(); ctx.translate(12, h / 2); ctx.rotate(-Math.PI / 2); ctx.fillText("signal power", -40, 0); ctx.restore();
+  // threshold line
+  ctx.setLineDash([4, 4]); ctx.strokeStyle = "#B5502F";
+  ctx.beginPath(); ctx.moveTo(pad.l, y(Number(params.threshold))); ctx.lineTo(w - pad.r, y(Number(params.threshold))); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = "#B5502F"; ctx.fillText("reward threshold", w - pad.r - 110, y(Number(params.threshold)) - 6);
+  // starting curve (faint) then current
+  if (startYs) {
+    ctx.strokeStyle = "#D9D2C5"; ctx.lineWidth = 2; ctx.beginPath();
+    startYs.forEach((v, i) => (i ? ctx.lineTo(x(i), y(v)) : ctx.moveTo(x(i), y(v)))); ctx.stroke();
+  }
+  ctx.strokeStyle = "#1F1D1A"; ctx.lineWidth = 2; ctx.beginPath();
+  ys.forEach((v, i) => (i ? ctx.lineTo(x(i), y(v)) : ctx.moveTo(x(i), y(v)))); ctx.stroke();
+}
+
+return {model, curve, draw, manifest};
+})({
+  "id": "threshold-learning-curve",
+  "name": "Threshold-gated learning curve",
+  "description": "A signal is rewarded only when it crosses a threshold; the curve shows how the signal grows across sessions. Models reward-gated learning (neurofeedback, operant conditioning, gated practice). Illustrative: shapes and rates are generic, never fitted to a study's data.",
+  "mechanism_keywords": ["threshold", "feedback", "reward", "training", "sessions", "neurofeedback"],
+  "params": {
+    "threshold": {"lo": 0.1, "hi": 1.0, "default": 0.55, "unit": "", "label": "Reward threshold"},
+    "sessions_per_week": {"lo": 1, "hi": 7, "default": 3, "step": 1, "unit": "/wk", "label": "Sessions per week"}
+  },
+  "defaults": {"threshold": 0.55, "sessions_per_week": 3},
+  "units": {"threshold": "", "sessions_per_week": "/wk"},
+  "outputs": ["final_power", "sessions_to_reward"],
+  "output_labels": {"final_power": "final alpha power (normalized)", "sessions_to_reward": "sessions until reward"},
+  "axes": {"x": "session", "y": "signal power (normalized)"},
+  "sessions": 20
+}
+);</script>
+<script>/* learningtool lesson player.
+   Every scene is server-rendered; this script only navigates, filters by depth,
+   records predictions (localStorage, never the repo), opens the evidence drawer,
+   and mounts widgets from window.TEMPLATES. No network. */
+(() => {
+  "use strict";
+  const DEPTHS = ["brief", "standard", "deep"];
+  const body = document.body;
+  const scenes = Array.from(document.querySelectorAll("section.scene"));
+  const arcItems = Array.from(document.querySelectorAll("#arc li"));
+  const announce = document.getElementById("announce");
+  const counter = document.getElementById("counter");
+  const storeKey = `learningtool:${body.dataset.paper}:${body.dataset.profile}`;
+
+  // ---- storage (private mode degrades to in-memory) -------------------------
+  let mem = {};
+  const store = {
+    get() { try { return JSON.parse(localStorage.getItem(storeKey) || "{}"); } catch { return mem; } },
+    set(v) { mem = v; try { localStorage.setItem(storeKey, JSON.stringify(v)); } catch { /* private mode */ } },
+  };
+  const state = Object.assign({ predictions: {}, depth: null, idx: 0 }, store.get());
+  if (!DEPTHS.includes(state.depth)) state.depth = body.dataset.defaultDepth || "standard";
+
+  // ---- depth ----------------------------------------------------------------
+  const depthRank = (d) => DEPTHS.indexOf(d);
+  const visible = () => scenes.filter((s) => depthRank(s.dataset.depth) <= depthRank(state.depth));
+  const isVisible = (s) => depthRank(s.dataset.depth) <= depthRank(state.depth);
+
+  function setDepth(d, fromUser) {
+    const current = scenes[state.idx];
+    state.depth = d;
+    document.querySelectorAll('input[name="depth"], input[name="depth-foot"]').forEach((r) => { r.checked = r.value === d; });
+    arcItems.forEach((li) => li.classList.toggle("hidden-depth", depthRank(li.dataset.depth) > depthRank(d)));
+    if (!isVisible(current)) {
+      // land on the nearest earlier visible scene and say so
+      let j = state.idx;
+      while (j > 0 && !isVisible(scenes[j])) j--;
+      show(j, { announceText: `Depth set to ${d}; moved to “${headingOf(scenes[j])}”.` });
+    } else {
+      updateChrome();
+      if (fromUser) say(`Depth set to ${d}: ${visible().length} scenes.`);
+    }
+    store.set(state);
+  }
+
+  // ---- navigation -------------------------------------------------------------
+  function headingOf(s) { const h = s.querySelector("h1"); return h ? h.textContent.trim() : ""; }
+
+  function show(idx, opts = {}) {
+    const target = scenes[idx];
+    if (!target || !isVisible(target)) return;
+    scenes.forEach((s) => { s.hidden = s !== target; s.classList.remove("enter"); });
+    target.classList.add("enter");
+    state.idx = idx;
+    store.set(state);
+    location.hash = `#s${idx}`;
+    mountReveal(target);
+    mountClose(target);
+    updateChrome();
+    target.focus({ preventScroll: false });
+    window.scrollTo({ top: 0 });
+    say(opts.announceText || `${headingOf(target)}. Scene ${positionOf(idx)} of ${visible().length}.`);
+  }
+
+  function positionOf(idx) { return visible().indexOf(scenes[idx]) + 1; }
+
+  function updateChrome() {
+    const vis = visible();
+    const pos = positionOf(state.idx);
+    const secondsLeft = vis.slice(pos).reduce((a, s) => a + (Number(s.dataset.seconds) || 0), 0);
+    counter.textContent = `scene ${pos} of ${vis.length}` + (secondsLeft ? ` · ~${Math.max(1, Math.round(secondsLeft / 60))} min left` : "");
+    arcItems.forEach((li) => {
+      const i = Number(li.dataset.idx);
+      li.classList.toggle("cur", i === state.idx);
+      li.classList.toggle("done", i < state.idx);
+      li.querySelector("button").setAttribute("aria-current", i === state.idx ? "true" : "false");
+    });
+    // Overflow rule: past 8 visible dots, label only first, previous, current, next, last.
+    const visLis = arcItems.filter((li) => !li.classList.contains("hidden-depth"));
+    const k = visLis.findIndex((li) => Number(li.dataset.idx) === state.idx);
+    visLis.forEach((li, j) => {
+      const near = j === 0 || j === visLis.length - 1 || Math.abs(j - k) <= 1;
+      li.classList.toggle("near", near);
+      li.classList.toggle("nolabel", visLis.length > 8 && !near);
+    });
+    const back = document.getElementById("back"), next = document.getElementById("next");
+    const narrow = window.matchMedia("(max-width: 767px)").matches;
+    back.disabled = pos <= 1;
+    const current = scenes[state.idx];
+    if (current.dataset.role === "predict") {
+      const locked = !!state.predictions[current.dataset.id];
+      next.disabled = !locked;
+      next.textContent = narrow ? "Next →" : locked ? "Next: what they found →" : "Lock in a prediction to continue";
+    } else {
+      next.disabled = pos >= vis.length;
+      const nxt = vis[pos];
+      next.textContent = narrow || !nxt ? "Next →" : `Next: ${nxt.querySelector(".kick")?.textContent.trim().toLowerCase() || "scene"} →`;
+    }
+    document.querySelectorAll(".foot").forEach((f) => { f.hidden = current.dataset.role === "title"; });
+  }
+
+  function step(delta) {
+    const vis = visible();
+    const j = vis.indexOf(scenes[state.idx]) + delta;
+    if (j < 0 || j >= vis.length) return;
+    show(scenes.indexOf(vis[j]));
+  }
+
+  // ---- predictions ------------------------------------------------------------
+  scenes.filter((s) => s.dataset.role === "predict").forEach((s) => {
+    const fs = s.querySelector(".predict"), lock = s.querySelector(".lock"), skip = s.querySelector(".skip"), note = s.querySelector(".locked-note");
+    const radios = Array.from(fs.querySelectorAll("input[type=radio]"));
+    const applyLocked = () => {
+      const p = state.predictions[s.dataset.id];
+      if (!p) return;
+      fs.classList.add("locked");
+      radios.forEach((r) => { r.disabled = true; r.checked = p.choice !== null && Number(r.value) === p.choice; });
+      lock.disabled = true; skip.hidden = true; note.hidden = false;
+      note.textContent = p.choice === null ? "You skipped the prediction. Next shows what the paper found." : "Locked in. Next shows what the paper found.";
+    };
+    radios.forEach((r) => r.addEventListener("change", () => { lock.disabled = false; }));
+    lock.addEventListener("click", () => {
+      const chosen = radios.find((r) => r.checked);
+      if (!chosen) return;
+      state.predictions[s.dataset.id] = { choice: Number(chosen.value), text: chosen.parentElement.textContent.trim() };
+      store.set(state); applyLocked(); updateChrome();
+    });
+    skip.addEventListener("click", () => {
+      state.predictions[s.dataset.id] = { choice: null, text: null };
+      store.set(state); applyLocked(); updateChrome();
+    });
+    fs.addEventListener("keydown", (e) => { if (e.key === "Enter" && !lock.disabled) lock.click(); });
+    applyLocked();
+  });
+
+  function mountReveal(scene) {
+    if (scene.dataset.role !== "found") return;
+    const said = scene.querySelector(".said"); if (!said) return;
+    const predictId = said.dataset.predict;
+    const p = state.predictions[predictId];
+    const verdict = scene.querySelector("[data-verdict]");
+    const quote = scene.querySelector("[data-reveal-quote]");
+    const predictScene = scenes.find((s) => s.dataset.id === predictId);
+    const answerIndex = predictScene ? Number(predictScene.querySelector(".predict").dataset.answer ?? "NaN") : NaN;
+    const note = scene.dataset.revealNote || "";
+    said.hidden = false;
+    if (!p) { said.textContent = "You have not made a prediction yet."; }
+    else if (p.choice === null) { said.textContent = "You skipped the prediction."; }
+    else { said.textContent = `You said: ${p.text}`; }
+    if (quote) requestAnimationFrame(() => quote.classList.add("in"));
+    verdict.hidden = false;
+    if (p && p.choice !== null && Number.isFinite(answerIndex)) {
+      verdict.textContent = p.choice === answerIndex ? "That's what they found." : `Close. The paper found: ${note || headingOf(scene).toLowerCase()}.`;
+    } else if (note) {
+      verdict.textContent = note;
+    } else { verdict.hidden = true; }
+  }
+
+  function mountClose(scene) {
+    if (scene.dataset.role !== "close") return;
+    const el = document.getElementById("close-prediction");
+    const entries = Object.values(state.predictions);
+    if (!entries.length) el.textContent = "You did not make a prediction.";
+    else if (entries[0].choice === null) el.textContent = "You skipped the prediction.";
+    else el.textContent = `You said: ${entries[0].text}`;
+  }
+
+  // ---- evidence drawer --------------------------------------------------------
+  const drawer = document.getElementById("drawer"), drawerBody = document.getElementById("drawer-body");
+  function openDrawer(scene, focusClaim, focusSpan) {
+    const tpl = scene.querySelector("template.drawer-content");
+    drawerBody.innerHTML = "";
+    if (tpl) drawerBody.appendChild(tpl.content.cloneNode(true));
+    drawerBody.querySelectorAll("li[data-claim]").forEach((li) => {
+      const hit = (focusClaim && li.dataset.claim === focusClaim) || (focusSpan && li.dataset.span === focusSpan);
+      li.classList.toggle("active", !!hit);
+    });
+    drawerBody.querySelectorAll(".zoom").forEach((b) => b.addEventListener("click", () => b.closest(".crop").classList.toggle("zoomed")));
+    if (typeof drawer.showModal === "function") drawer.showModal(); else drawer.setAttribute("open", "");
+    const active = drawerBody.querySelector("li.active"); if (active) active.scrollIntoView({ block: "start" });
+  }
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest(".open-drawer"); if (!b) return;
+    openDrawer(b.closest("section.scene"), b.dataset.claim, b.dataset.span);
+  });
+  document.querySelector(".close-drawer").addEventListener("click", () => drawer.close());
+  drawer.addEventListener("click", (e) => { if (e.target === drawer) drawer.close(); });
+
+  // ---- scene menu (phone) -----------------------------------------------------
+  const menu = document.getElementById("scene-menu"), menuList = document.getElementById("menu-list");
+  document.getElementById("menu").addEventListener("click", () => {
+    menuList.innerHTML = "";
+    visible().forEach((s) => {
+      const li = document.createElement("li"), b = document.createElement("button");
+      b.type = "button"; b.className = "linkish"; b.textContent = headingOf(s);
+      b.addEventListener("click", () => { menu.close(); show(scenes.indexOf(s)); });
+      li.appendChild(b); menuList.appendChild(li);
+    });
+    menu.showModal();
+  });
+  document.querySelector(".close-menu").addEventListener("click", () => menu.close());
+
+  // ---- widgets ------------------------------------------------------------------
+  document.querySelectorAll(".widget").forEach((w) => {
+    const cfg = JSON.parse(w.dataset.config);
+    const tpl = (window.TEMPLATES || {})[w.dataset.template];
+    const canvas = w.querySelector("canvas"), sliders = w.querySelector(".sliders"), readout = w.querySelector(".readout");
+    if (!tpl) { canvas.hidden = true; w.querySelector(".unavailable").hidden = false; sliders.hidden = true; w.querySelector(".read").hidden = true; return; }
+    const params = Object.assign({}, tpl.manifest.defaults || {}, cfg.params);
+    const start = Object.assign({}, params);
+    const inputs = {};
+    Object.entries(cfg.ranges).forEach(([name, [lo, hi]]) => {
+      const id = `${w.dataset.widget}-${name}`;
+      const label = document.createElement("label"); label.htmlFor = id;
+      const val = document.createElement("span"); val.className = "val";
+      label.append(document.createTextNode(cfg.labels[name] || name), val);
+      const spec = (tpl.manifest.params || {})[name] || {};
+      const input = document.createElement("input");
+      input.type = "range"; input.id = id; input.min = lo; input.max = hi; input.step = spec.step || (hi - lo) / 100; input.value = params[name];
+      const nudge = document.createElement("div"); nudge.className = "nudge"; nudge.textContent = cfg.nudges[name] || "";
+      const wrap = document.createElement("div"); wrap.append(label, input, nudge); sliders.appendChild(wrap);
+      inputs[name] = { input, val };
+    });
+    const draw = () => {
+      Object.entries(inputs).forEach(([n, { input, val }]) => { params[n] = Number(input.value); val.textContent = fmt(params[n], tpl.manifest.units && tpl.manifest.units[n]); });
+      const out = tpl.model(params), startOut = tpl.model(start);
+      const k = cfg.readout;
+      readout.innerHTML = `${(tpl.manifest.output_labels || {})[k] || k}: ${fmt(startOut[k])} → <b>${fmt(out[k])}</b>`;
+      const ctx = canvas.getContext("2d"); ctx.clearRect(0, 0, canvas.width, canvas.height);
+      tpl.draw(ctx, params, canvas.width, canvas.height, { start });
+    };
+    Object.values(inputs).forEach(({ input }) => input.addEventListener("input", draw));
+    w.querySelector(".reset").addEventListener("click", () => { Object.entries(inputs).forEach(([n, { input }]) => { input.value = start[n]; }); draw(); });
+    draw();
+  });
+  function fmt(v, unit) { const s = Number.isInteger(v) ? String(v) : Math.abs(v) >= 100 ? v.toFixed(0) : Math.abs(v) >= 10 ? v.toFixed(1) : v.toFixed(2); return unit ? `${s} ${unit}` : s; }
+
+  // ---- wiring -----------------------------------------------------------------
+  document.getElementById("start").addEventListener("click", () => step(1));
+  document.getElementById("restart").addEventListener("click", () => show(0));
+  document.getElementById("back").addEventListener("click", () => step(-1));
+  document.getElementById("next").addEventListener("click", () => step(1));
+  arcItems.forEach((li) => li.querySelector("button").addEventListener("click", () => show(Number(li.dataset.idx))));
+  document.querySelectorAll('input[name="depth"], input[name="depth-foot"]').forEach((r) => r.addEventListener("change", () => setDepth(r.value, true)));
+  document.addEventListener("keydown", (e) => {
+    if (e.target.matches("input, textarea") || drawer.open || menu.open) return;
+    if (e.key === "ArrowRight") { e.preventDefault(); if (!document.getElementById("next").disabled) step(1); }
+    if (e.key === "ArrowLeft") { e.preventDefault(); step(-1); }
+  });
+  function say(t) { announce.textContent = ""; setTimeout(() => { announce.textContent = t; }, 30); }
+
+  // ---- boot -------------------------------------------------------------------
+  scenes.forEach((s) => { const sec = s.dataset.seconds; if (sec === undefined) s.dataset.seconds = "0"; });
+  setDepth(state.depth, false);
+  const fromHash = Number((location.hash.match(/^#s(\d+)$/) || [])[1]);
+  show(Number.isFinite(fromHash) && scenes[fromHash] && isVisible(scenes[fromHash]) ? fromHash : (isVisible(scenes[state.idx]) ? state.idx : 0));
+})();
+</script>
+</body>
+</html>
