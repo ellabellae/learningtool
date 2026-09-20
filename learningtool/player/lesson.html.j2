@@ -83,7 +83,7 @@
       <p class="prose">{{ s.prose }}</p>
     {% endif %}
 
-    {% for c in s.claims if c.kind == 'finding' and c.quote and not (s.reveal and s.reveal.claim_id == c.id) %}
+    {% for c in s.claims if s.role != 'predict' and c.kind == 'finding' and c.quote and not (s.reveal and s.reveal.claim_id == c.id) %}
     <p class="src"><button type="button" class="linkish open-drawer" data-claim="{{ c.id }}">“{{ c.source_line }}” · p. {{ c.page }}</button> <span class="chip">{{ c.chip }}</span></p>
     {% endfor %}
 

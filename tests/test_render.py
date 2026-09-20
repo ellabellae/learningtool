@@ -158,3 +158,19 @@ def test_html_is_self_contained_except_fonts(html):
     srcs = re.findall(r'(?:src|href)="(https?://[^"]+)"', html)
     assert all("fonts.g" in s for s in srcs), srcs
     assert "<script src=" not in html
+
+
+def test_prediction_scene_never_shows_source_lines(parts):
+    lesson, checks, spans, profile = parts
+    lesson.scenes[4].claims = [lesson.scenes[5].claims[0].model_copy(update={"id": "c-spoiler"})]
+    lesson = Lesson.model_validate(lesson.model_dump())
+    checks.lesson_sha256 = lesson.sha256()
+    html = render(RenderInputs(lesson=lesson, checks=None, profile=profile, spans=spans))
+    visible = html.split("<template")  # source lines live outside the drawer templates
+    assert not any('data-claim="c-spoiler"' in part.split("</template>")[-1] for part in visible)
+
+
+def test_player_has_hashchange_resize_and_clean_verdict():
+    js = (Path(__file__).resolve().parents[1] / "learningtool" / "player" / "player.js").read_text(encoding="utf-8")
+    assert 'addEventListener("hashchange"' in js and 'addEventListener("resize", updateChrome)' in js
+    assert "replace(/[.!?\\s]+$/" in js
