@@ -104,3 +104,14 @@ def test_cli_share_refuses_a_lesson_that_did_not_pass(tmp_path):
     paper_id = _setup_paper(tmp_path, passing=False)
     out = _run(["share", paper_id[:12]], tmp_path)
     assert out.returncode == 1 and "only lessons that pass the checker are shared" in out.stderr
+
+
+def test_source_url_is_remembered_for_later_shares(tmp_path):
+    paper_id = _setup_paper(tmp_path)
+    assert _run(["share", paper_id[:12], "--source-url", "https://example.org/original.pdf"], tmp_path).returncode == 0
+    saved = tmp_path / "data" / "papers" / paper_id / "source_url.txt"
+    assert saved.read_text(encoding="utf-8").strip() == "https://example.org/original.pdf"
+    out = _run(["share", paper_id[:12], "--out", "site2"], tmp_path)  # no flag this time
+    assert out.returncode == 0 and "https://example.org/original.pdf" in out.stdout
+    page = next(p for p in (tmp_path / "site2").iterdir() if p.name != "index.html").read_text(encoding="utf-8")
+    assert page.count('href="https://example.org/original.pdf"') >= 2
